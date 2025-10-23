@@ -1,0 +1,17 @@
+---
+title: "Final Project"
+author: "Trinity Minard"
+format: pdf
+editor: visual
+---
+
+```{r}
+library(tidyverse)
+# Replace with your file paths
+raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
+cpm_data   <- read_tsv("stemformatics_dataset_7274.cpm.tsv")
+
+# Take a look at the first few rows
+head(raw_counts)
+head(cpm_data)
+```
