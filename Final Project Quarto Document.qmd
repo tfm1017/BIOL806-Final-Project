@@ -1,17 +1,296 @@
 ---
-title: "Final Project"
+title: "Analysis of iPSC Gene Expression (will be changed)"
+subtitle: "Final Project"
 author: "Trinity Minard"
-format: pdf
-editor: visual
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+format:
+  pdf:
+    keep-tex: true
+editor_options:
+  markdown:
+    wrap: 72
+bibliography:
+  - references.bib
+  - packages.bib
+csl: norsk-apa-manual.csl
 ---
 
-```{r}
+# Introduction
+
+The discovery of human induced pluripotent stem cells (iPSCs) by
+Takahashi and Yamanaka in 2007 [@takahashi2007] has revolutionized the
+regenerative medicine field. iPSCs are created by reprogramming somatic
+cells into an embryonic like state using the Yamanaka transciption
+factors: SOX2, OCT4, KLF4, and c-Myc). These cells have vast
+capabilities due to their ability to model human development and
+diseases *in vitro*, and their potential for patient specific
+(autologous) and "off the shelf" (allogeneic) cell therapies
+[@cerneckis2024].
+
+With that being said, the characterization of iPSC lines is essential in
+any experimental or manufacturing process to ensure consistency in
+culturing. This includes analyzing the expression of pluripotency (stem
+cell) markers, differentiation markers, and potential chromosomal
+abnormalies, to access the population of the culture. This is commonly
+done using techniques such as reverse transcriptase or real time
+quantitative PCR (RT-qPCR) to analyze mRNA expression [@artyukhov2017],
+or using an antibody based experiment to analyze protein expression
+levels, such as Flow Cytometry or immunocytochemistry. When conducting
+these experiments, specifically RT-qPCR, reference genes, also known as
+housekeeping genes, are used to normalize the expression of other genes
+in a sample [@artyukhov2017]. This allows the expression of genes to be
+compared across different samples, since it is presumed that the
+expression of the housekeeping gene is consistent across all of the
+samples. In stem cell samples, however, it has been found that the
+commonly used housekeeping genes, such as GAPDH, appear to fluctuate in
+iPSC samples [@panina2020], making it difficult to achieve accurate
+normalization data.
+
+RNA Seq is a technique that sequences the entirety of RNA molecules in a
+given sample, rather than using gene specific primers or probes as in
+RT-qPCR and other techniques. This allows the entire transciptome to be
+analyzed, providing a complete picture of the expression of genes in a
+sample [@wang2009]. Additionally, gene expression is calculated by
+dividing the raw counts of a gene by the total counts in a sample,
+eliminating the need for a housekeeping gene. This allows for an
+unbiased and quantitiative analysis of millions of genes in sample
+[@wang2009]. Despite these advantages, RNA-Seq is far more time
+consuming and expensive than RT-qPCR and other experiments, making it
+non practical in a manufacturing setting. Therefore, utilizing RNA-Seq
+to analyze iPSC samples could provide insight into housekeeping gene
+expression, allowing researchers to select ideal reference genes for
+their analysis.
+
+A similar study, conducted by Carcamo-Orive *et al.,* investigated the
+variability of gene expression across 317 iPSC lines generated from 101
+individuals [@carcamo-orive2017] and created a publically avaible data
+set of their raw RNA Seq data. They found that genetic variability in
+the iPSC lines was influenced by a donor specific gene expression
+pattern, specifically influenced by donor age, sex, ancestry, and
+reprogramming variabilies. iPSCs can also be reprogrammed from a variety
+of somatic cells, such as blood, skin fibroblasts, hair keratinocytes,
+urine cells, mesencymal stem cells, and bone marrow [@poetsch2022].
+While some somatic cells are easier to obtain than others, such as blood
+cells and fibroblasts, iPSCs from these lines are associated with higher
+genomic mutations due to the somatic cells' high turnover rate.
+Additionally, iPSCs appear to have an epigenetic memory of their tissue
+of origin, which has been found to influence their differentiation
+[@poetsch2022]. All of these factors, and many others, could be
+contributing to the variations in gene expression in iPSC samples.
+
+This publicly available dataset from Carcamo-Orive *et al.* was used to
+analyze the expression of RNA across iPSC samples, with a focus on the
+expression of pluripotency markers, differentiation markers, and
+housekeeping genes.
+
+# Methods
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#create list of packages to cite
+packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales")
+#citing R and packages
+knitr::write_bib(packages, "packages.bib")
+```
+
+### Data Cleaning
+
+RNA-Seq counts per million data was acquired from Stemformatics
+[@stemform], using the Carcamo-Orive (2017) dataset
+[@carcamo-orive2017]. Genes in this study were referred to by their
+Ensembl ID, so gene information was integrated from Emsembl database
+[@ensembl]. To begin to clean the data, the Ensembl gene ID in both the
+count per million data frame and Ensembl data frame were mutated, using
+the dplyr package [@R-dplyr] from tidyverse [@R-tidyverse], to the name:
+Gene stable ID. The Ensembl gene data frame was then filtered for the
+genes in the count per million data set (reducing the number of genes
+from 86,369 to 56,693).
+
+*further cleaning of the count per million data will be added*
+
+### Figure 1
+
+A new column was then added to the Ensembl data frame called Category,
+which uses the Gene type column to categorize the genes into the
+following categories: Protein coding, long non coding RNA (lncRNA),
+Small RNAs, Pseudogenes, and Other. A count of the number of genes in
+each category was then performed by using group by Category and
+summarizing a count. A fraction and percentage were then calculated by
+adding a column to the data frame that divides the count by the sum of
+count (i.e. total count for all categories). This summarized data was
+later plotted as a pie chart, so modifications were made to the
+summarized data, such as defining ymax, ymin, and label position, for
+ease of plotting. Text labeled were also created, which include the
+category and the percentage calculated above. Percentages over 10% where
+then added to a subcategory, called large slice, so that large
+categories could be labeled on the slices but small categories would be
+labeled outside of the pie chart. The scales [@R-scales] package from
+ggplot2 [@R-ggplot2] was used to create the pie chart, by plotting "" on
+the x axis, fraction on the y axis, and fill by category. Geom_bar and
+coord_polar were used to format the pie chart, using fraction for the
+size and angle of the slices. Theme_void was then used to remove the
+default plot elements, creating a white background. Plot.margin was then
+set to 0 on all sides to remove white space around the plot. Labels on
+large slices were added by using the subset, large slice categories, and
+adding a label using the label position and label text defined above.
+Repel labels were added to categories not in large slices, using the
+same label position and label text.
+
+*continue methods for following figures ...*
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#library packages
 library(tidyverse)
-# Replace with your file paths
+library(dplyr)
+library(scales)
+library(ggrepel)
+
+#import data files
 raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
 cpm_data   <- read_tsv("stemformatics_dataset_7274.cpm.tsv")
+ensembl_data <- read_csv("mart_export.txt")
 
-# Take a look at the first few rows
-head(raw_counts)
-head(cpm_data)
+# view data files
+#head(raw_counts)
+#head(cpm_data)
 ```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Change column name from "0.001" to "Gene Stable ID"
+cpm_data <- cpm_data %>%
+  rename("Gene stable ID" = "...1")
+
+#Create a data frame with only the gene info for the genes in this study
+ensembl_filtered <- ensembl_data %>%
+  filter(`Gene stable ID` %in% cpm_data$`Gene stable ID`)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Add a new column 'Category' based on 'Gene type'
+ensembl_filtered <- ensembl_filtered %>%
+  mutate(Category = case_when(
+    `Gene type` %in% c("protein_coding") ~ "Protein coding",
+    `Gene type` %in% c("lncRNA", "TEC") ~ "lncRNA",
+    `Gene type` %in% c("miRNA", 
+                          "snoRNA", 
+                          "snRNA", 
+                          "scaRNA", 
+                          "sRNA", 
+                          "vault_RNA", 
+                          "ribozyme") ~ "Small RNAs",
+    `Gene type` %in% c("pseudogene", 
+                          "processed_pseudogene", 
+                          "unprocessed_pseudogene",
+                          "transcribed_unprocessed_pseudogene",
+                          "transcribed_processed_pseudogene",
+                          "unitary_pseudogene", 
+                          "IG_C_pseudogene", 
+                          "IG_V_pseudogene",
+                          "IG_J_pseudogene", 
+                          "TR_J_pseudogene", 
+                          "TR_V_pseudogene",
+                          "translated_processed_pseudogene",
+                        "transcribed_unitary_pseudogene") ~ "Pseudogenes",
+       `Gene type` %in% c("misc_RNA", 
+                          "artifact", 
+                          "Mt_tRNA", 
+                          "IG_V_gene", 
+                          "IG_J_gene", 
+                          "IG_C_gene", 
+                          "IG_D_gene",
+                          "TR_J_gene", 
+                          "TR_V_gene", 
+                          "TR_D_gene", 
+                          "TR_C_gene",
+                          "rRNA", 
+                          "Mt_rRNA", 
+                          "rRNA_pseudogene") ~ "Other",
+   TRUE ~ "Other"))
+
+#summarize count of genes by RNA catagory
+RNA_types_summary <- ensembl_filtered %>%
+  group_by(Category) %>%
+  summarize(count = n(), .groups = "drop") %>%
+  mutate(fraction = count / sum(count),
+         ymax = cumsum(fraction),
+         ymin = c(0, head(ymax, n=-1)),
+         label_pos = (ymax + ymin)/2,
+         label_text = paste0(Category, "\n", scales::percent(fraction)),
+         large_slice = fraction > 0.1)
+```
+
+# Results
+
+```{r fig-rna-type, fig.cap = "Detected RNA Types. The number of genes detected in each RNA category from RNA-seq data were counted and plotted as a pie chart. Small categories (< 2 %), such as rRNA, tRNA, and immunoglobulin genes, were combined into an 'Other' category.", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
+
+# Pie chart of number of genes per RNA catagory
+ggplot(RNA_types_summary, aes(x = "", y = fraction, fill = Category)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  theme_void() +
+theme(
+  legend.position = "none",
+  plot.margin = margin(0, 0, 0, 0)) +
+  # On-slice labels for large slices
+  geom_text(
+    data = subset(RNA_types_summary, large_slice),
+    aes(y = label_pos, label = label_text),
+    size = 7,
+    fontface = "bold",
+    color = "white") +
+  # Repelled labels for small slices
+ geom_text_repel(
+    data = subset(RNA_types_summary, !large_slice),
+    aes(x = 1, y = label_pos, label = label_text),  
+    size = 7,
+    fontface = "bold",
+    nudge_x = 0.8,
+    force = 0.5,
+    segment.color = "grey60",
+    segment.length = 0.2,
+    show.legend = FALSE) +
+  labs(fill = "Category")
+```
+
+Figure 2. Expression by RNA Type (similar to figure 1 but expression
+based rather than count based)
+
+```{r fig-rna-expression, fig.cap = "Expression by RNA Type.", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
+#
+
+```
+
+Figure 3. Expression of Pluripotency Genes (SOX2, OCT4, KLF4, c-Myc,
+TRA-181, TRA-1-60, NANOG, SSEA4)
+
+```{r fig-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
+
+protein_coding_genes <- ensembl_filtered %>%
+  filter(`Gene type` == "protein_coding",
+         !is.na(`Gene name`))
+```
+
+Figure 4. Expression of Differentiation Genes (ectoderm: PAX6, NESTIN or
+SOX1 (neural projenitor/stem cell markers), KRT14 (epithelial),
+endoderm: SOX17, AFP (hepatic), PDX1 (pancreatic), mesoderm: CD34
+(hematopoitic), CD90 (mesenchymal), NKX2.5 (cardiac progenitor))
+
+Figure 5. Expression of Housekeeping Genes (some sort of general figure
+or sorted by housekeeping type (i.e. ribosomal, metabolic, cytoskeleton,
+etc.))
+
+Figure 6. Expression of Housekeeping Genes (focusing on some genes,
+either over time during reprogramming or across different conditions)
+
+these figures may be split into more than the six described depending on
+the data
+
+figures will include heat maps, bar charts, and possibly volcano plots
+
+# Discussion
+
+# Conclusion
+
+------------------------------------------------------------------------
+
+# References
