@@ -255,14 +255,86 @@ theme(
 Figure 2. Expression by RNA Type (similar to figure 1 but expression
 based rather than count based)
 
-```{r fig-rna-expression, fig.cap = "Expression by RNA Type.", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
-#
+```{r fig-rna-expression, fig.cap = "Expression by RNA Type.", fig.cap = "Expression by RNA Types. The expression of genes, using raw count per million data, was averaged by type of RNA and plotted as a pie chart. Small categories (< 2 %), such as rRNA, tRNA, and immunoglobulin genes, were combined into an 'Other' category.",fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
 
+# pivot raw cpm data and add ensembl data information by Gene. then remove NAs
+cpm_long <- cpm_data %>%
+  pivot_longer(-`Gene stable ID`, names_to = "Sample", values_to = "Expression") %>%
+  left_join(ensembl_filtered, by = "Gene stable ID") %>%
+  filter(!is.na(Category), !is.na(Expression)) 
+
+# summarize expression per category 
+cpm_category_summary <- cpm_long %>%
+  group_by(Category) %>%
+  summarize(Total_Expression = sum(Expression)) %>%
+  ungroup() %>%
+  mutate(
+    fraction = Total_Expression / sum(Total_Expression),
+    label_text = paste0(Category, "\n", round(fraction * 100, 1), "%"),
+    label_pos = cumsum(fraction) - fraction / 2,
+    large_slice = fraction > 0.1)  
+
+#create a pie chart
+ggplot(cpm_category_summary, aes(x = "", y = fraction, fill = Category)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  theme_void() +
+  theme(
+    legend.position = "none",
+    plot.margin = margin(0, 0, 0, 0)) +
+  # On-slice labels for large slices
+  geom_text(
+    data = subset(cpm_category_summary, large_slice),
+    aes(y = label_pos, label = label_text),
+    size = 7,
+    fontface = "bold",
+    color = "white") +
+  # Repelled labels for small slices
+  geom_text_repel(
+    data = subset(cpm_category_summary, !large_slice),
+    aes(x = 1, y = label_pos, label = label_text),
+    size = 7,
+    fontface = "bold",
+    nudge_x = 0.8,
+    force = 0.5,
+    segment.color = "grey60",
+    segment.length = 0.2,
+    show.legend = FALSE) +
+  labs(fill = "Category")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#begin cleaning data 
+
+#verify that the sample ids match in raw_counts and _cpm_data
+raw_counts <- raw_counts[match(colnames(cpm_data)[-1], raw_counts$sample_id), ]
+
+all(colnames(cpm_data)[-1] == raw_counts$sample_id)
+
+#convert counts per million to a log scale, excluding the first column which has gene info, and adding an offset so that values use to 0 are not skewed
+logCPM <- cbind(`Gene stable ID` = cpm_data$`Gene stable ID`, log2(cpm_data[,-1] + 0.5))
+
+#summary(raw_counts)
+#unique(raw_counts$parental_cell_type) #all parent cells are blood mononuclear
+#unique(raw_counts$disease_state) #all normal
+#unique(raw_counts$sex) #male and female
+#unique(raw_counts$developmental_stage) #33 ages 
+
+#based on information regarding the samples, sex and age differ across the samples.
+
+#age is reported as "age years old", so a new column was added with just the numeric
+raw_counts$age_numeric <- as.numeric(sub("-year-old.*", "", raw_counts$developmental_stage))
+
+#age was then grouped by decade to reduce the number of conditions 
+raw_counts$age_decade <- cut(
+  raw_counts$age_numeric,
+  breaks = seq(40, 80, by = 10),
+  labels = c("40s", "50s", "60s", "70s"),
+  right = FALSE)
 ```
 
 Figure 3. Expression of Pluripotency Genes (SOX2, OCT4, KLF4, c-Myc,
 TRA-181, TRA-1-60, NANOG, SSEA4)
-
 ```{r fig-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
 
 protein_coding_genes <- ensembl_filtered %>%
@@ -286,6 +358,7 @@ these figures may be split into more than the six described depending on
 the data
 
 figures will include heat maps, bar charts, and possibly volcano plots
+
 
 # Discussion
 
