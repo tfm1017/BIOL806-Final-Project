@@ -87,7 +87,7 @@ housekeeping genes.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 #create list of packages to cite
-packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales")
+packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales", "pheatmap")
 #citing R and packages
 knitr::write_bib(packages, "packages.bib")
 ```
@@ -143,6 +143,7 @@ library(tidyverse)
 library(dplyr)
 library(scales)
 library(ggrepel)
+library(pheatmap)
 
 #import data files
 raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
@@ -331,15 +332,69 @@ raw_counts$age_decade <- cut(
   breaks = seq(40, 80, by = 10),
   labels = c("40s", "50s", "60s", "70s"),
   right = FALSE)
+
+# add gene name from ensembl filtered to longCPM data
+logCPM_named <- logCPM %>%
+  left_join(
+    ensembl_filtered %>% select(`Gene stable ID`, `Gene name`),
+    by = c("Gene stable ID" = "Gene stable ID"))
+
+# move gene name to first column
+logCPM_named <- logCPM_named %>%
+  select(`Gene name`, everything())
 ```
 
-Figure 3. Expression of Pluripotency Genes (SOX2, OCT4, KLF4, c-Myc,
-TRA-181, TRA-1-60, NANOG, SSEA4)
+Figure 3. Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
+TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A, LIN28B, ESRRB, PRDM14, ZRP42 (REX1), TFCP2L1
 ```{r fig-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
+#create a list of pluripotency genes 
+pluripotency_genes <- c("SOX2", "POU5F1", "KLF4", "MYC",
+                        "PODXL", "NANOG", "FUT4", "LIN28A", 
+                        "LIN28B", "ESRRB", "PRDM14", "ZFP42", "TFCP2L1")
+#create a data frame with just pluripotency genes, samples, and their log expression 
+logCPM_pluripotency <- logCPM_named %>%
+  select(-`Gene stable ID`) %>%
+  filter(`Gene name` %in% pluripotency_genes) %>%
+  pivot_longer(-`Gene name`, names_to = "Sample", values_to = "Expression")
 
-protein_coding_genes <- ensembl_filtered %>%
-  filter(`Gene type` == "protein_coding",
-         !is.na(`Gene name`))
+#add sample info from raw_counts
+logCPM_pluripotency <- logCPM_pluripotency %>%
+  left_join(
+    raw_counts %>% select(sample_id, sex, age_numeric, age_decade),
+    by = c("Sample" = "sample_id"))
+#create a column with both age and sex info
+logCPM_pluripotency <- logCPM_pluripotency %>%
+  mutate(age_sex = paste(age_decade, sex, sep = " ")) %>%
+  filter(!is.na(age_decade) & !is.na(sex))
+
+#check for missing genes 
+missing_genes <- setdiff(pluripotency_genes, logCPM_pluripotency$`Gene name`)
+missing_genes
+
+#can now plot data as violin, bar graph, boxplot, heatmap, etc.
+
+#summarize average expression and create matrix
+expr_by_age <- logCPM_pluripotency %>%
+  group_by(`Gene name`, age_sex) %>%
+  summarize(Expression = mean(Expression, na.rm = TRUE),
+            .groups = "drop") %>%
+  pivot_wider(names_from = age_sex, values_from = Expression) %>%
+  column_to_rownames("Gene name") %>%
+  as.matrix()
+
+#create heatmap 
+pheatmap(
+  expr_by_age,
+  scale = "row",                 
+  cluster_rows = TRUE,           
+  cluster_cols = FALSE,          
+  show_rownames = TRUE,
+  show_colnames = TRUE,
+  fontsize_row = 10,
+  fontsize_col = 12,
+  main = "Pluripotency Gene Expression by Age and Sex",
+  cellwidth = 50,                
+  cellheight = 25)
 ```
 
 Figure 4. Expression of Differentiation Genes (ectoderm: PAX6, NESTIN or
