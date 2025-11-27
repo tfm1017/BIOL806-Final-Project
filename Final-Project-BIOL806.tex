@@ -1,0 +1,1467 @@
+% Options for packages loaded elsewhere
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\PassOptionsToPackage{dvipsnames,svgnames,x11names}{xcolor}
+%
+\documentclass[
+  letterpaper,
+  DIV=11,
+  numbers=noendperiod]{scrartcl}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+% Make \paragraph and \subparagraph free-standing
+\makeatletter
+\ifx\paragraph\undefined\else
+  \let\oldparagraph\paragraph
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+  \let\oldsubparagraph\subparagraph
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+\makeatother
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+
+
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  % set entry spacing
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+
+
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+ 
+
+
+\KOMAoption{captions}{tableheading}
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\AtBeginDocument{%
+\ifdefined\contentsname
+  \renewcommand*\contentsname{Table of contents}
+\else
+  \newcommand\contentsname{Table of contents}
+\fi
+\ifdefined\listfigurename
+  \renewcommand*\listfigurename{List of Figures}
+\else
+  \newcommand\listfigurename{List of Figures}
+\fi
+\ifdefined\listtablename
+  \renewcommand*\listtablename{List of Tables}
+\else
+  \newcommand\listtablename{List of Tables}
+\fi
+\ifdefined\figurename
+  \renewcommand*\figurename{Figure}
+\else
+  \newcommand\figurename{Figure}
+\fi
+\ifdefined\tablename
+  \renewcommand*\tablename{Table}
+\else
+  \newcommand\tablename{Table}
+\fi
+}
+\@ifpackageloaded{float}{}{\usepackage{float}}
+\floatstyle{ruled}
+\@ifundefined{c@chapter}{\newfloat{codelisting}{h}{lop}}{\newfloat{codelisting}{h}{lop}[chapter]}
+\floatname{codelisting}{Listing}
+\newcommand*\listoflistings{\listof{codelisting}{List of Listings}}
+\makeatother
+\makeatletter
+\makeatother
+\makeatletter
+\@ifpackageloaded{caption}{}{\usepackage{caption}}
+\@ifpackageloaded{subcaption}{}{\usepackage{subcaption}}
+\makeatother
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Analysis of iPSC Gene Expression (will be changed)},
+  pdfauthor={Trinity Minard},
+  colorlinks=true,
+  linkcolor={blue},
+  filecolor={Maroon},
+  citecolor={Blue},
+  urlcolor={Blue},
+  pdfcreator={LaTeX via pandoc}}
+
+
+\title{Analysis of iPSC Gene Expression (will be changed)}
+\usepackage{etoolbox}
+\makeatletter
+\providecommand{\subtitle}[1]{% add subtitle to \maketitle
+  \apptocmd{\@title}{\par {\large #1 \par}}{}{}
+}
+\makeatother
+\subtitle{Final Project}
+\author{Trinity Minard}
+\date{2025-11-27}
+\begin{document}
+\maketitle
+
+
+\section{Introduction}\label{introduction}
+
+The discovery of human induced pluripotent stem cells (iPSCs) by
+Takahashi and Yamanaka in 2007 (Takahashi et al., 2007) has
+revolutionized the regenerative medicine field. iPSCs are created by
+reprogramming somatic cells into an embryonic like state using the
+Yamanaka transciption factors: SOX2, OCT4, KLF4, and c-Myc). These cells
+have vast capabilities due to their ability to model human development
+and diseases \emph{in vitro}, and their potential for patient specific
+(autologous) and ``off the shelf'' (allogeneic) cell therapies
+(Cerneckis et al., 2024).
+
+With that being said, the characterization of iPSC lines is essential in
+any experimental or manufacturing process to ensure consistency in
+culturing. This includes analyzing the expression of pluripotency (stem
+cell) markers, differentiation markers, and potential chromosomal
+abnormalies, to access the population of the culture. This is commonly
+done using techniques such as reverse transcriptase or real time
+quantitative PCR (RT-qPCR) to analyze mRNA expression (Artyukhov et al.,
+2017), or using an antibody based experiment to analyze protein
+expression levels, such as Flow Cytometry or immunocytochemistry. When
+conducting these experiments, specifically RT-qPCR, reference genes,
+also known as housekeeping genes, are used to normalize the expression
+of other genes in a sample (Artyukhov et al., 2017). This allows the
+expression of genes to be compared across different samples, since it is
+presumed that the expression of the housekeeping gene is consistent
+across all of the samples. In stem cell samples, however, it has been
+found that the commonly used housekeeping genes, such as GAPDH, appear
+to fluctuate in iPSC samples (Panina et al., 2020), making it difficult
+to achieve accurate normalization data.
+
+RNA Seq is a technique that sequences the entirety of RNA molecules in a
+given sample, rather than using gene specific primers or probes as in
+RT-qPCR and other techniques. This allows the entire transciptome to be
+analyzed, providing a complete picture of the expression of genes in a
+sample (Wang et al., 2009). Additionally, gene expression is calculated
+by dividing the raw counts of a gene by the total counts in a sample,
+eliminating the need for a housekeeping gene. This allows for an
+unbiased and quantitiative analysis of millions of genes in sample (Wang
+et al., 2009). Despite these advantages, RNA-Seq is far more time
+consuming and expensive than RT-qPCR and other experiments, making it
+non practical in a manufacturing setting. Therefore, utilizing RNA-Seq
+to analyze iPSC samples could provide insight into housekeeping gene
+expression, allowing researchers to select ideal reference genes for
+their analysis.
+
+A similar study, conducted by Carcamo-Orive \emph{et al.,} investigated
+the variability of gene expression across 317 iPSC lines generated from
+101 individuals (Carcamo-Orive et al., 2017) and created a publically
+avaible data set of their raw RNA Seq data. They found that genetic
+variability in the iPSC lines was influenced by a donor specific gene
+expression pattern, specifically influenced by donor age, sex, ancestry,
+and reprogramming variabilies. iPSCs can also be reprogrammed from a
+variety of somatic cells, such as blood, skin fibroblasts, hair
+keratinocytes, urine cells, mesencymal stem cells, and bone marrow
+(Poetsch et al., 2022). While some somatic cells are easier to obtain
+than others, such as blood cells and fibroblasts, iPSCs from these lines
+are associated with higher genomic mutations due to the somatic cells'
+high turnover rate. Additionally, iPSCs appear to have an epigenetic
+memory of their tissue of origin, which has been found to influence
+their differentiation (Poetsch et al., 2022). All of these factors, and
+many others, could be contributing to the variations in gene expression
+in iPSC samples.
+
+This publicly available dataset from Carcamo-Orive \emph{et al.} was
+used to analyze the expression of RNA across iPSC samples, with a focus
+on the expression of pluripotency markers, differentiation markers, and
+housekeeping genes.
+
+\section{Methods}\label{methods}
+
+\subsubsection{Data Cleaning}\label{data-cleaning}
+
+RNA-Seq counts per million data was acquired from Stemformatics using
+the Carcamo-Orive (2017) dataset {[}Carcamo-Orive et al. (2017){]}.
+Genes in this study were referred to by their Ensembl ID, so gene
+information, such as name and RNA type, was integrated from the Emsembl
+database.
+
+\emph{further cleaning of the count per million data will be added}
+
+\subsubsection{Figure 1}\label{figure-1}
+
+Genes detected in the RNA Seq counts per million data were grouped into
+the following catagories: Protein coding, long non coding RNA (lncRNA),
+Small RNAs, Pseudogenes, and Other. A count of the number of genes in
+each category was then performed by using the dplyr package (Wickham et
+al., 2023) from tidyverse (Wickham, 2023). A fraction and percentage
+were then calculated by dividing the count by the sum of count
+(i.e.~total count for all categories). The scales (Wickham, Pedersen, et
+al., 2025) package from ggplot2 (Wickham, Chang, et al., 2025) was used
+to create a pie chart of the counts by RNA category.
+
+\emph{continue methods for following figures \ldots{}}
+
+\section{Results}\label{results}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-rna-pie-chart-1.pdf}}
+
+}
+
+\caption{\label{fig-rna-pie-chart}Detected RNA Types in iPSC Sample
+Analzyed using RNA Seq. The number of genes detected in each RNA
+category from RNA-seq data were counted and plotted as a pie chart
+(left). Small categories (\textless{} 2 \%), such as rRNA, tRNA, and
+immunoglobulin genes, were combined into an `Other' category. The
+expression of genes, using raw count per million data, was averaged by
+type of RNA and plotted as a pie chart (right).}
+
+\end{figure}%
+
+\emph{need to fix labels so they line up with slices }
+
+The RNA Seq data is composed of a variety of different types of RNA, as
+seen in Figure 1. 34.8\% of read genes are mRNA protein coding genes,
+whereas the remaining 65.2\% of the detected genes are not protein
+coding and are primary composed of noncoding RNAs and pseudogenes, which
+are RNA sequences that look like protein coding genes but are not able
+to be translated into a protein. 25.6\% of the detected genes were
+pseuodegenes. 25.5\% were long non coding RNA sequences and 8.5\% were
+small RNAs, which included snoRNA, snRNA, scaRNA, sRNA, and ribozyme
+RNA. 5.7\% were ``Other'' RNAs, which include ribosoal RNA, immunoglobin
+genes, T-cell receptor genes, and mitocondrial RNAs. The right pie
+chart, on the other hand, displays the expression of these groups. For
+each gene for each sample, a count per million number was provided by
+Carcamo-Orive \emph{et al.}. This is typically calculated by dividing
+the raw count of the gene by the total reads in the sample and
+multiplying by one million. The total expression was summed for each
+category, and this was graphed in Figure 2, which displays that 91.7\%
+of the expression is from protein coding genes. The remaining 8.3\%
+accounts for the expression of small RNAs, long non coding RNA,
+pseuodgenes, and ``Other'' genes. This is supported by \_\_\_ data from
+\_\_\_ article, which saw \_\_\_\_.
+
+Figure X. Will potentially add a PCA plot to identify which variables
+strongly influence gene expression.
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC1
+           Df  Sum Sq Mean Sq F value Pr(>F)
+sex         1    3033  3033.4  0.7567  0.385
+Residuals 306 1226658  4008.7               
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC2
+           Df Sum Sq Mean Sq F value Pr(>F)
+sex         1    713  713.05  0.2855 0.5935
+Residuals 306 764263 2497.59               
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC1
+            Df  Sum Sq Mean Sq F value Pr(>F)
+age_decade   3   21643  7214.5  1.8155 0.1443
+Residuals  304 1208048  3973.8               
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC2
+            Df Sum Sq Mean Sq F value Pr(>F)
+age_decade   3   9096  3032.1  1.2194 0.3027
+Residuals  304 755880  2486.4               
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC1
+           Df  Sum Sq Mean Sq F value Pr(>F)
+age_sex     7   29038  4148.3  1.0365 0.4055
+Residuals 300 1200653  4002.2               
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC2
+           Df Sum Sq Mean Sq F value    Pr(>F)    
+age_sex     7  71066   10152  4.3891 0.0001177 ***
+Residuals 300 693911    2313                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC1
+           Df  Sum Sq Mean Sq F value    Pr(>F)    
+race        4  114273 28568.3  7.6996 6.617e-06 ***
+Residuals 287 1064872  3710.4                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{verbatim}
+Analysis of Variance Table
+
+Response: PC2
+           Df Sum Sq Mean Sq F value    Pr(>F)    
+race        4  94361 23590.3  10.251 9.011e-08 ***
+Residuals 287 660466  2301.3                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-pca-sexage-1.pdf}}
+
+}
+
+\caption{\label{fig-pca-sexage}Caption.}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-pca-race-1.pdf}}
+
+}
+
+\caption{\label{fig-pca-race}Caption.}
+
+\end{figure}%
+
+top 20 genes:
+
+sex linked RPS4Y1 Ribosomal protein S4, Y-linked. Present only in males.
+High variance indicates sex is a strong driver. XIST X-inactive specific
+transcript. Expressed in females for X-chromosome inactivation.
+Sex-linked. DDX3Y DEAD-box helicase, Y-linked. Male-specific. TSIX
+Antisense of XIST, regulates X-chromosome inactivation. Female-specific.
+TXLNGY Y-linked, involved in transcription/translation regulation. KDM5D
+Lysine demethylase 5D, Y-linked. Male-specific. USP9Y Ubiquitin-specific
+peptidase 9, Y-linked. Male-specific. EIF1AY Eukaryotic translation
+initiation factor 1A, Y-linked. Male-specific. UTY Ubiquitously
+transcribed tetratricopeptide repeat, Y-linked. Male-specific. NLGN4Y
+Neuroligin 4, Y-linked. Male-specific. RPS4XP22 Pseudogene similar to
+RPS4X/RPS4Y.
+
+other genes CST1 Cystatin SN, extracellular protease inhibitor. May vary
+in differentiation. CER1 Cerberus, secreted factor involved in early
+development and differentiation. LARGE1 Glycosyltransferase, involved in
+post-translational modification. NLRP2 NLR family pyrin domain
+containing 2, involved in early development, oocyte/embryo regulation.
+COL3A1 Collagen type III alpha 1, ECM protein, differentiation-related.
+ZNF208 Zinc finger protein, transcription factor, potential regulatory
+role. APOA1 Apolipoprotein A1, lipid transport, may reflect metabolic
+differences. MEG3 Long non-coding RNA, tumor suppressor, epigenetic
+regulation, differentiation-related. LINC00261 Long non-coding RNA,
+involved in endoderm differentiation.
+
+\subsubsection{Pluripotency Markers}\label{pluripotency-markers}
+
+Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
+TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A, LIN28B, ESRRB,
+PRDM14, ZRP42 (REX1), TFCP2L1.
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-heatmap-pluripotency-1.pdf}}
+
+}
+
+\caption{\label{fig-heatmap-pluripotency}Expression of Pluripotency
+Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-heatmap-pluripotency-race-1.pdf}}
+
+}
+
+\caption{\label{fig-heatmap-pluripotency-race}Expression of Pluripotency
+Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-bargraph-pluripotency-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-pluripotency}Expression of Pluripotency
+Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-bargraph-pluripotency-race-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-pluripotency-race}Expression of
+Pluripotency Genes}
+
+\end{figure}%
+
+\emph{will remove lmm and qqplot outputs for final submission}
+
+\begin{verbatim}
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: Expression ~ age_sex + (1 | `Gene name`)
+   Data: df_pluri_agesex
+
+REML criterion at convergence: 4575.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.6491 -0.5579  0.0284  0.5521  5.6655 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Gene name (Intercept) 12.0051  3.4648  
+ Residual               0.2074  0.4554  
+Number of obs: 3504, groups:  Gene name, 12
+
+Fixed effects:
+                    Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)          6.19511    1.00049   11.01081   6.192 6.76e-05 ***
+age_sex40s male      0.11258    0.05213 3485.00000   2.159   0.0309 *  
+age_sex50s female   -0.02437    0.02884 3485.00000  -0.845   0.3983    
+age_sex50s male     -0.02283    0.03182 3485.00000  -0.718   0.4731    
+age_sex60s female    0.01962    0.02818 3485.00000   0.696   0.4863    
+age_sex60s male      0.01738    0.02962 3485.00000   0.587   0.5574    
+age_sex70s female    0.02017    0.04233 3485.00000   0.476   0.6339    
+age_sex70s male      0.20776    0.04614 3485.00000   4.503 6.92e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) ag_40m ag_50f ag_50m ag_60f ag_60m ag_70f
+age_sx40sml -0.011                                          
+ag_sx50sfml -0.019  0.371                                   
+age_sx50sml -0.018  0.336  0.608                            
+ag_sx60sfml -0.020  0.379  0.686  0.622                     
+age_sx60sml -0.019  0.361  0.653  0.591  0.668              
+ag_sx70sfml -0.013  0.253  0.457  0.414  0.467  0.445       
+age_sx70sml -0.012  0.232  0.419  0.380  0.429  0.408  0.285
+\end{verbatim}
+
+\begin{verbatim}
+Type III Analysis of Variance Table with Satterthwaite's method
+        Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+age_sex 7.7171  1.1024     7  3485  5.3154 4.615e-06 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{verbatim}
+$emmeans
+ age_sex    emmean SE  df asymp.LCL asymp.UCL
+ 40s female   6.20  1 Inf      4.23      8.16
+ 40s male     6.31  1 Inf      4.35      8.27
+ 50s female   6.17  1 Inf      4.21      8.13
+ 50s male     6.17  1 Inf      4.21      8.13
+ 60s female   6.21  1 Inf      4.25      8.18
+ 60s male     6.21  1 Inf      4.25      8.17
+ 70s female   6.22  1 Inf      4.25      8.18
+ 70s male     6.40  1 Inf      4.44      8.36
+
+Degrees-of-freedom method: asymptotic 
+Confidence level used: 0.95 
+
+$contrasts
+ contrast                estimate     SE  df z.ratio p.value
+ 40s female - 40s male   -0.11258 0.0521 Inf  -2.159  0.3766
+ 40s female - 50s female  0.02437 0.0288 Inf   0.845  0.9905
+ 40s female - 50s male    0.02283 0.0318 Inf   0.718  0.9965
+ 40s female - 60s female -0.01962 0.0282 Inf  -0.696  0.9971
+ 40s female - 60s male   -0.01738 0.0296 Inf  -0.587  0.9990
+ 40s female - 70s female -0.02017 0.0423 Inf  -0.476  0.9998
+ 40s female - 70s male   -0.20776 0.0461 Inf  -4.503  0.0002
+ 40s male - 50s female    0.13695 0.0493 Inf   2.775  0.1012
+ 40s male - 50s male      0.13541 0.0511 Inf   2.648  0.1390
+ 40s male - 60s female    0.09296 0.0490 Inf   1.899  0.5518
+ 40s male - 60s male      0.09520 0.0498 Inf   1.911  0.5429
+ 40s male - 70s female    0.09242 0.0583 Inf   1.586  0.7589
+ 40s male - 70s male     -0.09518 0.0611 Inf  -1.558  0.7754
+ 50s female - 50s male   -0.00153 0.0270 Inf  -0.057  1.0000
+ 50s female - 60s female -0.04399 0.0226 Inf  -1.946  0.5190
+ 50s female - 60s male   -0.04175 0.0244 Inf  -1.712  0.6792
+ 50s female - 70s female -0.04453 0.0388 Inf  -1.146  0.9465
+ 50s female - 70s male   -0.23213 0.0430 Inf  -5.403  <.0001
+ 50s male - 60s female   -0.04246 0.0263 Inf  -1.614  0.7418
+ 50s male - 60s male     -0.04021 0.0278 Inf  -1.445  0.8364
+ 50s male - 70s female   -0.04300 0.0411 Inf  -1.046  0.9673
+ 50s male - 70s male     -0.23059 0.0450 Inf  -5.123  <.0001
+ 60s female - 60s male    0.00224 0.0236 Inf   0.095  1.0000
+ 60s female - 70s female -0.00054 0.0384 Inf  -0.014  1.0000
+ 60s female - 70s male   -0.18814 0.0425 Inf  -4.425  0.0003
+ 60s male - 70s female   -0.00278 0.0394 Inf  -0.071  1.0000
+ 60s male - 70s male     -0.19038 0.0435 Inf  -4.378  0.0003
+ 70s female - 70s male   -0.18760 0.0530 Inf  -3.542  0.0095
+
+Degrees-of-freedom method: asymptotic 
+P value adjustment: tukey method for comparing a family of 8 estimates 
+\end{verbatim}
+
+\begin{verbatim}
+# A tibble: 24 x 8
+   term         df  sumsq meansq statistic      p.value Gene          p_adj
+   <chr>     <dbl>  <dbl>  <dbl>     <dbl>        <dbl> <chr>         <dbl>
+ 1 group_var     7  3.16  0.452      6.07   0.00000129  LIN28A   0.00000517
+ 2 Residuals   284 21.1   0.0744    NA     NA           LIN28A  NA         
+ 3 group_var     7  7.06  1.01       3.48   0.00136     TFCP2L1  0.00272   
+ 4 Residuals   284 82.3   0.290     NA     NA           TFCP2L1 NA         
+ 5 group_var     7  5.84  0.835      6.47   0.000000437 SOX2     0.00000262
+ 6 Residuals   284 36.6   0.129     NA     NA           SOX2    NA         
+ 7 group_var     7  1.63  0.232      3.04   0.00420     POU5F1   0.00720   
+ 8 Residuals   284 21.7   0.0763    NA     NA           POU5F1  NA         
+ 9 group_var     7  0.898 0.128      0.888  0.516       LIN28B   0.516     
+10 Residuals   284 41.0   0.144     NA     NA           LIN28B  NA         
+# i 14 more rows
+\end{verbatim}
+
+\begin{verbatim}
+# A tibble: 336 x 7
+# Groups:   Gene [12]
+      diff      lwr    upr    p_value Gene   comparison               p_adj
+     <dbl>    <dbl>  <dbl>      <dbl> <chr>  <chr>                    <dbl>
+ 1  0.467   0.137   0.798  0.000565   LIN28A 40s male-40s female   0.00528 
+ 2  0.238   0.0551  0.421  0.00225    LIN28A 50s female-40s female 0.0157  
+ 3  0.353   0.152   0.555  0.00000497 LIN28A 50s male-40s female   0.000139
+ 4  0.266   0.0874  0.444  0.000214   LIN28A 60s female-40s female 0.00299 
+ 5  0.179  -0.00848 0.367  0.0732     LIN28A 60s male-40s female   0.256   
+ 6  0.0928 -0.175   0.361  0.965      LIN28A 70s female-40s female 1.000   
+ 7  0.249  -0.0428  0.542  0.158      LIN28A 70s male-40s female   0.442   
+ 8 -0.229  -0.542   0.0832 0.331      LIN28A 50s female-40s male   0.842   
+ 9 -0.114  -0.438   0.210  0.962      LIN28A 50s male-40s male     1.000   
+10 -0.201  -0.512   0.109  0.496      LIN28A 60s female-40s male   0.992   
+# i 326 more rows
+\end{verbatim}
+
+Residual variance = 0.2103 and intercept variance = 12.0276 means most
+of the variation is between genes, not sex and age.
+
+Fixed effects Sex effect (male): Expression is slightly higher in males,
+for all genes, by 0.036 logCPM; significant at p = 0.0205, but only at
+0.03648 units (log2 count per million/relative expression?).
+
+Age effects: Only the 70s group is significantly higher than 40s (p =
+0.0135), 0.08018 units. 50s and 60s are not significantly different from
+40s.
+
+Type III Analysis of Variance Table with Satterthwaite's method -
+confirms both sex and age\_decade have a significant effect on
+pluripotency gene expression when averaged across all genes.
+
+Predicted mean logCPM expression (adjusted means, not raw means)
+
+female: 6.20. male: 6.23
+
+40s: 6.20, 50s: 6.18, 60s: 6.21, 70s: 6.28
+
+Overall, pluripotency gene expression is slightly higher in males
+compared to females, regardless of age. Expression also shows an
+increasing trend with age, with samples from individuals in their 70s
+being significantly higher than those from individuals in their 40s.
+Differences between other age decades (50s, 60s) and 40s were not
+statistically significant.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#pluripotency genes, race stats }
+
+\NormalTok{df\_pluri\_race }\OtherTok{\textless{}{-}}\NormalTok{ pluri\_race\_results}\SpecialCharTok{$}\NormalTok{data}
+ \CommentTok{\# Fit mixed model}
+\CommentTok{\#model the response variable, Expression, for the fixed effects, age and sex}
+\CommentTok{\# genes are treated as a random effect, all with different y intercepts,}
+\CommentTok{\# since expression levels vary by gene}
+\NormalTok{lmm\_pluri\_race }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(Expression }\SpecialCharTok{\textasciitilde{}}\NormalTok{ race }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|} \StringTok{\textasciigrave{}}\AttributeTok{Gene name}\StringTok{\textasciigrave{}}\NormalTok{), }\AttributeTok{data =}\NormalTok{ df\_pluri\_race)}
+\NormalTok{summary\_pluri\_race }\OtherTok{\textless{}{-}} \FunctionTok{summary}\NormalTok{(lmm\_pluri\_race)}
+  \CommentTok{\# type III ANOVA to test significance of fixed effects on expression}
+\NormalTok{lmm\_pluri\_race\_anova }\OtherTok{\textless{}{-}} \FunctionTok{anova}\NormalTok{(lmm\_pluri\_race, }\AttributeTok{type =} \DecValTok{3}\NormalTok{)}
+
+\CommentTok{\# estimated marginal means (or least{-}squares means) with pairwise comparisons}
+\NormalTok{lmm\_pluri\_race\_emm }\OtherTok{\textless{}{-}} \FunctionTok{emmeans}\NormalTok{(lmm\_pluri\_race, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ race)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
+To enable adjustments, add the argument 'pbkrtest.limit = 3504' (or larger)
+[or, globally, 'set emm_options(pbkrtest.limit = 3504)' or larger];
+but be warned that this may result in large computation time and memory use.
+\end{verbatim}
+
+\begin{verbatim}
+Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
+To enable adjustments, add the argument 'lmerTest.limit = 3504' (or larger)
+[or, globally, 'set emm_options(lmerTest.limit = 3504)' or larger];
+but be warned that this may result in large computation time and memory use.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#lmm summary}
+\NormalTok{summary\_pluri\_race}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: Expression ~ race + (1 | `Gene name`)
+   Data: df_pluri_race
+
+REML criterion at convergence: 4592.4
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.7200 -0.5553  0.0448  0.5467  5.5487 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Gene name (Intercept) 12.0051  3.4648  
+ Residual               0.2092  0.4574  
+Number of obs: 3504, groups:  Gene name, 12
+
+Fixed effects:
+                  Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)        6.17921    1.00065   11.01802   6.175 6.91e-05 ***
+raceAsian          0.03317    0.03742 3488.00000   0.886    0.375    
+raceCaucasian      0.03371    0.03089 3488.00000   1.092    0.275    
+raceHispanic       0.01311    0.04601 3488.00000   0.285    0.776    
+raceSouth Asian   -0.02661    0.04704 3488.00000  -0.566    0.572    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) racAsn rcCcsn rcHspn
+raceAsian   -0.023                     
+raceCaucasn -0.028  0.754              
+raceHispanc -0.019  0.506  0.613       
+raceSothAsn -0.019  0.495  0.600  0.403
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#anova}
+\NormalTok{lmm\_pluri\_race\_anova}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Type III Analysis of Variance Table with Satterthwaite's method
+     Sum Sq Mean Sq NumDF DenDF F value Pr(>F)
+race 0.7839 0.19598     4  3488  0.9367 0.4415
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#means }
+\NormalTok{lmm\_pluri\_race\_emm}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+$emmeans
+ race             emmean SE  df asymp.LCL asymp.UCL
+ African American   6.18  1 Inf      4.22      8.14
+ Asian              6.21  1 Inf      4.25      8.17
+ Caucasian          6.21  1 Inf      4.25      8.17
+ Hispanic           6.19  1 Inf      4.23      8.15
+ South Asian        6.15  1 Inf      4.19      8.11
+
+Degrees-of-freedom method: asymptotic 
+Confidence level used: 0.95 
+
+$contrasts
+ contrast                       estimate     SE  df z.ratio p.value
+ African American - Asian       -0.03317 0.0374 Inf  -0.886  0.9021
+ African American - Caucasian   -0.03371 0.0309 Inf  -1.092  0.8110
+ African American - Hispanic    -0.01311 0.0460 Inf  -0.285  0.9986
+ African American - South Asian  0.02661 0.0470 Inf   0.566  0.9800
+ Asian - Caucasian              -0.00055 0.0247 Inf  -0.022  1.0000
+ Asian - Hispanic                0.02006 0.0421 Inf   0.476  0.9895
+ Asian - South Asian             0.05977 0.0432 Inf   1.382  0.6390
+ Caucasian - Hispanic            0.02061 0.0364 Inf   0.566  0.9800
+ Caucasian - South Asian         0.06032 0.0377 Inf   1.599  0.4980
+ Hispanic - South Asian          0.03972 0.0509 Inf   0.781  0.9362
+
+Degrees-of-freedom method: asymptotic 
+P value adjustment: tukey method for comparing a family of 5 estimates 
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#gene anova FDR corrected }
+\NormalTok{pluri\_race\_results}\SpecialCharTok{$}\NormalTok{anova\_fdr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 24 x 8
+   term         df  sumsq meansq statistic       p.value Gene           p_adj
+   <chr>     <dbl>  <dbl>  <dbl>     <dbl>         <dbl> <chr>          <dbl>
+ 1 group_var     4  2.66  0.665       8.83  0.000000983  LIN28A   0.00000590 
+ 2 Residuals   287 21.6   0.0754     NA    NA            LIN28A  NA          
+ 3 group_var     4  5.49  1.37        4.70  0.00110      TFCP2L1  0.00270    
+ 4 Residuals   287 83.9   0.292      NA    NA            TFCP2L1 NA          
+ 5 group_var     4  5.83  1.46       11.4   0.0000000131 SOX2     0.000000157
+ 6 Residuals   287 36.7   0.128      NA    NA            SOX2    NA          
+ 7 group_var     4  0.444 0.111       1.39  0.236        POU5F1   0.258      
+ 8 Residuals   287 22.9   0.0796     NA    NA            POU5F1  NA          
+ 9 group_var     4  2.76  0.691       5.06  0.000589     LIN28B   0.00236    
+10 Residuals   287 39.2   0.136      NA    NA            LIN28B  NA          
+# i 14 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#gene tueky corrected}
+\NormalTok{pluri\_race\_results}\SpecialCharTok{$}\NormalTok{tukey\_fdr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 120 x 7
+# Groups:   Gene [12]
+      diff    lwr     upr     p_value Gene   comparison                    p_adj
+     <dbl>  <dbl>   <dbl>       <dbl> <chr>  <chr>                         <dbl>
+ 1  0.112  -0.101  0.326  0.602       LIN28A Asian-African American      7.52e-1
+ 2  0.0313 -0.145  0.208  0.989       LIN28A Caucasian-African American  9.89e-1
+ 3 -0.0898 -0.352  0.173  0.882       LIN28A Hispanic-African American   9.80e-1
+ 4 -0.390  -0.659 -0.122  0.000791    LIN28A South Asian-African Americ~ 2.64e-3
+ 5 -0.0808 -0.222  0.0602 0.516       LIN28A Caucasian-Asian             7.38e-1
+ 6 -0.202  -0.442  0.0385 0.146       LIN28A Hispanic-Asian              2.92e-1
+ 7 -0.502  -0.749 -0.256  0.000000528 LIN28A South Asian-Asian           5.28e-6
+ 8 -0.121  -0.329  0.0869 0.500       LIN28A Hispanic-Caucasian          7.38e-1
+ 9 -0.422  -0.637 -0.206  0.00000157  LIN28A South Asian-Caucasian       7.86e-6
+10 -0.301  -0.591 -0.0103 0.0383      LIN28A South Asian-Hispanic        9.57e-2
+# i 110 more rows
+\end{verbatim}
+
+\subsubsection{Differentiation Markers}\label{differentiation-markers}
+
+Expression of Differentiation Genes (ectoderm: PAX6, NESTIN (NES) or
+SOX1 (neural projenitor/stem cell markers), KRT14 (epithelial),
+endoderm: SOX17, AFP (hepatic), PDX1 (pancreatic), mesoderm: CD34
+(hematopoitic), CD90 (THY1)(mesenchymal), NKX2.5 (cardiac progenitor)).
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-heatmap-diff-1.pdf}}
+
+}
+
+\caption{\label{fig-heatmap-diff}Expression of Differentiation Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-heatmap-diff-race-1.pdf}}
+
+}
+
+\caption{\label{fig-heatmap-diff-race}Expression of Differentiation
+Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-bargraph-diff-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-diff}Expression of Differentiation Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-bargraph-diff-race-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-diff-race}Expression of Differentiation
+Genes}
+
+\end{figure}%
+
+\emph{need to fix significance bars + asterisks when values are
+negative}
+
+\begin{verbatim}
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: Expression ~ age_sex + (1 | `Gene name`)
+   Data: df_diff_agesex
+
+REML criterion at convergence: 8696.2
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.6292 -0.4208 -0.1085  0.2793  7.1639 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Gene name (Intercept) 12.362   3.516   
+ Residual               1.114   1.055   
+Number of obs: 2920, groups:  Gene name, 10
+
+Fixed effects:
+                    Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)          2.16618    1.11348    9.04685   1.945   0.0834 .  
+age_sex40s male     -0.21109    0.13236 2903.00000  -1.595   0.1109    
+age_sex50s female   -0.22545    0.07323 2903.00000  -3.079   0.0021 ** 
+age_sex50s male     -0.34974    0.08078 2903.00000  -4.329 1.55e-05 ***
+age_sex60s female   -0.44996    0.07155 2903.00000  -6.288 3.69e-10 ***
+age_sex60s male     -0.07894    0.07521 2903.00000  -1.050   0.2940    
+age_sex70s female    0.05717    0.10748 2903.00000   0.532   0.5948    
+age_sex70s male     -0.16292    0.11714 2903.00000  -1.391   0.1644    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) ag_40m ag_50f ag_50m ag_60f ag_60m ag_70f
+age_sx40sml -0.024                                          
+ag_sx50sfml -0.044  0.371                                   
+age_sx50sml -0.040  0.336  0.608                            
+ag_sx60sfml -0.045  0.379  0.686  0.622                     
+age_sx60sml -0.043  0.361  0.653  0.591  0.668              
+ag_sx70sfml -0.030  0.253  0.457  0.414  0.467  0.445       
+age_sx70sml -0.028  0.232  0.419  0.380  0.429  0.408  0.285
+\end{verbatim}
+
+\begin{verbatim}
+Type III Analysis of Variance Table with Satterthwaite's method
+        Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+age_sex 81.569  11.653     7  2903   10.46 4.893e-13 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{verbatim}
+$emmeans
+ age_sex    emmean   SE   df lower.CL upper.CL
+ 40s female   2.17 1.11 9.05   -0.351     4.68
+ 40s male     1.96 1.12 9.20   -0.566     4.48
+ 50s female   1.94 1.11 9.02   -0.575     4.46
+ 50s male     1.82 1.11 9.04   -0.700     4.33
+ 60s female   1.72 1.11 9.02   -0.800     4.23
+ 60s male     2.09 1.11 9.02   -0.429     4.60
+ 70s female   2.22 1.12 9.11   -0.295     4.74
+ 70s male     2.00 1.12 9.14   -0.516     4.52
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 
+
+$contrasts
+ contrast                estimate     SE   df t.ratio p.value
+ 40s female - 40s male     0.2111 0.1320 2903   1.595  0.7536
+ 40s female - 50s female   0.2255 0.0732 2903   3.079  0.0437
+ 40s female - 50s male     0.3497 0.0808 2903   4.329  0.0004
+ 40s female - 60s female   0.4500 0.0716 2903   6.288  <.0001
+ 40s female - 60s male     0.0789 0.0752 2903   1.050  0.9667
+ 40s female - 70s female  -0.0572 0.1070 2903  -0.532  0.9995
+ 40s female - 70s male     0.1629 0.1170 2903   1.391  0.8617
+ 40s male - 50s female     0.0144 0.1250 2903   0.115  1.0000
+ 40s male - 50s male       0.1386 0.1300 2903   1.068  0.9634
+ 40s male - 60s female     0.2389 0.1240 2903   1.922  0.5360
+ 40s male - 60s male      -0.1322 0.1260 2903  -1.045  0.9674
+ 40s male - 70s female    -0.2683 0.1480 2903  -1.813  0.6109
+ 40s male - 70s male      -0.0482 0.1550 2903  -0.311  1.0000
+ 50s female - 50s male     0.1243 0.0686 2903   1.813  0.6113
+ 50s female - 60s female   0.2245 0.0574 2903   3.911  0.0024
+ 50s female - 60s male    -0.1465 0.0619 2903  -2.367  0.2581
+ 50s female - 70s female  -0.2826 0.0986 2903  -2.866  0.0800
+ 50s female - 70s male    -0.0625 0.1090 2903  -0.573  0.9992
+ 50s male - 60s female     0.1002 0.0668 2903   1.501  0.8072
+ 50s male - 60s male      -0.2708 0.0707 2903  -3.832  0.0033
+ 50s male - 70s female    -0.4069 0.1040 2903  -3.899  0.0025
+ 50s male - 70s male      -0.1868 0.1140 2903  -1.635  0.7291
+ 60s female - 60s male    -0.3710 0.0599 2903  -6.193  <.0001
+ 60s female - 70s female  -0.5071 0.0974 2903  -5.208  <.0001
+ 60s female - 70s male    -0.2870 0.1080 2903  -2.659  0.1358
+ 60s male - 70s female    -0.1361 0.1000 2903  -1.360  0.8753
+ 60s male - 70s male       0.0840 0.1100 2903   0.761  0.9950
+ 70s female - 70s male     0.2201 0.1340 2903   1.637  0.7280
+
+Degrees-of-freedom method: kenward-roger 
+P value adjustment: tukey method for comparing a family of 8 estimates 
+\end{verbatim}
+
+\begin{verbatim}
+# A tibble: 20 x 8
+   term         df   sumsq  meansq statistic    p.value Gene       p_adj
+   <chr>     <dbl>   <dbl>   <dbl>     <dbl>      <dbl> <chr>      <dbl>
+ 1 group_var     7    1.57  0.224      1.56   0.146     NES     0.183   
+ 2 Residuals   284   40.7   0.143     NA     NA         NES    NA       
+ 3 group_var     7   58.1   8.30       4.34   0.000139  CD34    0.000694
+ 4 Residuals   284  543.    1.91      NA     NA         CD34   NA       
+ 5 group_var     7   12.0   1.71       0.772  0.612     AFP     0.612   
+ 6 Residuals   284  631.    2.22      NA     NA         AFP    NA       
+ 7 group_var     7    4.88  0.697      2.92   0.00581   NKX2-5  0.0116  
+ 8 Residuals   284   67.8   0.239     NA     NA         NKX2-5 NA       
+ 9 group_var     7  118.   16.9        3.78   0.000617  SOX17   0.00206 
+10 Residuals   284 1268.    4.46      NA     NA         SOX17  NA       
+11 group_var     7   34.9   4.98       4.56   0.0000771 PAX6    0.000694
+12 Residuals   284  310.    1.09      NA     NA         PAX6   NA       
+13 group_var     7    2.23  0.319      2.01   0.0544    THY1    0.0778  
+14 Residuals   284   45.1   0.159     NA     NA         THY1   NA       
+15 group_var     7    1.89  0.270      2.76   0.00865   PDX1    0.0144  
+16 Residuals   284   27.8   0.0977    NA     NA         PDX1   NA       
+17 group_var     7    2.03  0.291      0.777  0.607     SOX1    0.612   
+18 Residuals   284  106.    0.374     NA     NA         SOX1   NA       
+19 group_var     7    3.20  0.458      3.52   0.00121   KRT14   0.00302 
+20 Residuals   284   36.9   0.130     NA     NA         KRT14  NA       
+\end{verbatim}
+
+\begin{verbatim}
+# A tibble: 280 x 7
+# Groups:   Gene [10]
+       diff     lwr   upr p_value Gene  comparison            p_adj
+      <dbl>   <dbl> <dbl>   <dbl> <chr> <chr>                 <dbl>
+ 1  0.0402  -0.418  0.499   1.000 NES   40s male-40s female       1
+ 2  0.183   -0.0704 0.437   0.351 NES   50s female-40s female     1
+ 3  0.0455  -0.234  0.325   1.000 NES   50s male-40s female       1
+ 4  0.109   -0.139  0.357   0.884 NES   60s female-40s female     1
+ 5  0.0395  -0.221  0.300   1.000 NES   60s male-40s female       1
+ 6  0.0876  -0.285  0.460   0.996 NES   70s female-40s female     1
+ 7 -0.131   -0.537  0.275   0.976 NES   70s male-40s female       1
+ 8  0.143   -0.291  0.577   0.973 NES   50s female-40s male       1
+ 9  0.00526 -0.445  0.455   1.000 NES   50s male-40s male         1
+10  0.0684  -0.362  0.499   1.000 NES   60s female-40s male       1
+# i 270 more rows
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#diff genes, race stats }
+
+\NormalTok{df\_diff\_race }\OtherTok{\textless{}{-}}\NormalTok{ diff\_race\_results}\SpecialCharTok{$}\NormalTok{data}
+ \CommentTok{\# Fit mixed model}
+\CommentTok{\#model the response variable, Expression, for the fixed effects, age and sex}
+\CommentTok{\# genes are treated as a random effect, all with different y intercepts,}
+\CommentTok{\# since expression levels vary by gene}
+\NormalTok{lmm\_diff\_race }\OtherTok{\textless{}{-}} \FunctionTok{lmer}\NormalTok{(Expression }\SpecialCharTok{\textasciitilde{}}\NormalTok{ race }\SpecialCharTok{+}\NormalTok{ (}\DecValTok{1} \SpecialCharTok{|} \StringTok{\textasciigrave{}}\AttributeTok{Gene name}\StringTok{\textasciigrave{}}\NormalTok{), }\AttributeTok{data =}\NormalTok{ df\_diff\_race)}
+\NormalTok{summary\_diff\_race }\OtherTok{\textless{}{-}} \FunctionTok{summary}\NormalTok{(lmm\_diff\_race)}
+  \CommentTok{\# type III ANOVA to test significance of fixed effects on expression}
+\NormalTok{lmm\_diff\_race\_anova }\OtherTok{\textless{}{-}} \FunctionTok{anova}\NormalTok{(lmm\_diff\_race, }\AttributeTok{type =} \DecValTok{3}\NormalTok{)}
+
+\CommentTok{\# estimated marginal means (or least{-}squares means) with pairwise comparisons}
+\NormalTok{lmm\_diff\_race\_emm }\OtherTok{\textless{}{-}} \FunctionTok{emmeans}\NormalTok{(lmm\_diff\_race, pairwise }\SpecialCharTok{\textasciitilde{}}\NormalTok{ race)}
+
+\CommentTok{\#lmm summary}
+\NormalTok{summary\_diff\_race}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: Expression ~ race + (1 | `Gene name`)
+   Data: df_diff_race
+
+REML criterion at convergence: 8633.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-2.4076 -0.4522 -0.0864  0.2784  7.4030 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Gene name (Intercept) 12.363   3.516   
+ Residual               1.093   1.046   
+Number of obs: 2920, groups:  Gene name, 10
+
+Fixed effects:
+                  Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)        2.03509    1.11433    9.07427   1.826   0.1008    
+raceAsian         -0.44469    0.09369 2906.00000  -4.746 2.17e-06 ***
+raceCaucasian     -0.12665    0.07734 2906.00000  -1.638   0.1016    
+raceHispanic       0.27489    0.11521 2906.00000   2.386   0.0171 *  
+raceSouth Asian    0.66696    0.11779 2906.00000   5.662 1.64e-08 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) racAsn rcCcsn rcHspn
+raceAsian   -0.052                     
+raceCaucasn -0.063  0.754              
+raceHispanc -0.043  0.506  0.613       
+raceSothAsn -0.042  0.495  0.600  0.403
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#anova}
+\NormalTok{lmm\_diff\_race\_anova}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+Type III Analysis of Variance Table with Satterthwaite's method
+     Sum Sq Mean Sq NumDF DenDF F value    Pr(>F)    
+race 138.86  34.715     4  2906  31.756 < 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#means }
+\NormalTok{lmm\_diff\_race\_emm}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+$emmeans
+ race             emmean   SE   df lower.CL upper.CL
+ African American   2.04 1.11 9.07   -0.483     4.55
+ Asian              1.59 1.11 9.04   -0.926     4.11
+ Caucasian          1.91 1.11 9.00   -0.607     4.42
+ Hispanic           2.31 1.12 9.11   -0.209     4.83
+ South Asian        2.70 1.12 9.12    0.183     5.22
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 
+
+$contrasts
+ contrast                       estimate     SE   df t.ratio p.value
+ African American - Asian          0.445 0.0937 2906   4.746  <.0001
+ African American - Caucasian      0.127 0.0773 2906   1.638  0.4733
+ African American - Hispanic      -0.275 0.1150 2906  -2.386  0.1194
+ African American - South Asian   -0.667 0.1180 2906  -5.662  <.0001
+ Asian - Caucasian                -0.318 0.0619 2906  -5.140  <.0001
+ Asian - Hispanic                 -0.720 0.1050 2906  -6.824  <.0001
+ Asian - South Asian              -1.112 0.1080 2906 -10.268  <.0001
+ Caucasian - Hispanic             -0.402 0.0912 2906  -4.401  0.0001
+ Caucasian - South Asian          -0.794 0.0945 2906  -8.401  <.0001
+ Hispanic - South Asian           -0.392 0.1270 2906  -3.079  0.0179
+
+Degrees-of-freedom method: kenward-roger 
+P value adjustment: tukey method for comparing a family of 5 estimates 
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#gene anova FDR corrected }
+\NormalTok{diff\_race\_results}\SpecialCharTok{$}\NormalTok{anova\_fdr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 20 x 8
+   term         df    sumsq  meansq statistic   p.value Gene       p_adj
+   <chr>     <dbl>    <dbl>   <dbl>     <dbl>     <dbl> <chr>      <dbl>
+ 1 group_var     4    2.74   0.685      4.97   6.95e- 4 NES     1.16e- 3
+ 2 Residuals   287   39.6    0.138     NA     NA        NES    NA       
+ 3 group_var     4   95.0   23.7       13.5    4.57e-10 CD34    2.28e- 9
+ 4 Residuals   287  506.     1.76      NA     NA        CD34   NA       
+ 5 group_var     4   46.7   11.7        5.63   2.26e- 4 AFP     4.52e- 4
+ 6 Residuals   287  596.     2.08      NA     NA        AFP    NA       
+ 7 group_var     4    0.536  0.134      0.533  7.12e- 1 NKX2-5  7.91e- 1
+ 8 Residuals   287   72.2    0.251     NA     NA        NKX2-5 NA       
+ 9 group_var     4  297.    74.4       19.6    2.82e-14 SOX17   2.82e-13
+10 Residuals   287 1089.     3.79      NA     NA        SOX17  NA       
+11 group_var     4   40.6   10.2        9.56   2.85e- 7 PAX6    9.50e- 7
+12 Residuals   287  305.     1.06      NA     NA        PAX6   NA       
+13 group_var     4    1.01   0.252      1.56   1.85e- 1 THY1    2.31e- 1
+14 Residuals   287   46.3    0.161     NA     NA        THY1   NA       
+15 group_var     4    1.33   0.331      3.36   1.04e- 2 PDX1    1.49e- 2
+16 Residuals   287   28.3    0.0987    NA     NA        PDX1   NA       
+17 group_var     4   10.2    2.54       7.43   1.05e- 5 SOX1    2.61e- 5
+18 Residuals   287   98.1    0.342     NA     NA        SOX1   NA       
+19 group_var     4    0.194  0.0485     0.348  8.45e- 1 KRT14   8.45e- 1
+20 Residuals   287   39.9    0.139     NA     NA        KRT14  NA       
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#gene tueky corrected}
+\NormalTok{diff\_race\_results}\SpecialCharTok{$}\NormalTok{tukey\_fdr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 100 x 7
+# Groups:   Gene [10]
+      diff    lwr     upr  p_value Gene  comparison                     p_adj
+     <dbl>  <dbl>   <dbl>    <dbl> <chr> <chr>                          <dbl>
+ 1  0.0937 -0.195  0.383  0.900    NES   Asian-African American       0.964  
+ 2 -0.0578 -0.296  0.181  0.964    NES   Caucasian-African American   0.964  
+ 3 -0.143  -0.499  0.212  0.803    NES   Hispanic-African American    0.964  
+ 4 -0.431  -0.794 -0.0680 0.0109   NES   South Asian-African American 0.0363 
+ 5 -0.152  -0.342  0.0393 0.190    NES   Caucasian-Asian              0.447  
+ 6 -0.237  -0.562  0.0881 0.268    NES   Hispanic-Asian               0.447  
+ 7 -0.525  -0.859 -0.191  0.000211 NES   South Asian-Asian            0.00211
+ 8 -0.0855 -0.367  0.196  0.920    NES   Hispanic-Caucasian           0.964  
+ 9 -0.373  -0.665 -0.0821 0.00455  NES   South Asian-Caucasian        0.0227 
+10 -0.288  -0.681  0.105  0.262    NES   South Asian-Hispanic         0.447  
+# i 90 more rows
+\end{verbatim}
+
+\subsubsection{Housekeeping Genes}\label{housekeeping-genes}
+
+Figure 5. Expression of Housekeeping Genes (some sort of general figure
+or sorted by housekeeping type (i.e.~ribosomal, metabolic, cytoskeleton,
+etc.))
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-heatmap-hk-1.pdf}}
+
+}
+
+\caption{\label{fig-heatmap-hk}Expression of Housekeeping Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-heatmap-hk-race-1.pdf}}
+
+}
+
+\caption{\label{fig-heatmap-hk-race}Expression of Housekeeping Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-bargraph-hk-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-hk}Expression of Housekeeping Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806_files/figure-pdf/fig-bargraph-hk-race-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-hk-race}Expression of Housekeeping Genes}
+
+\end{figure}%
+
+\begin{verbatim}
+# A tibble: 18 x 8
+   term         df   sumsq meansq statistic  p.value Gene            p_adj
+   <chr>     <dbl>   <dbl>  <dbl>     <dbl>    <dbl> <chr>           <dbl>
+ 1 group_var     7   0.496 0.0709     3.06   4.04e-3 TBP      0.0121      
+ 2 Residuals   284   6.59  0.0232    NA     NA       TBP     NA           
+ 3 group_var     7   2.50  0.357      1.93   6.55e-2 ACTB     0.0842      
+ 4 Residuals   284  52.6   0.185     NA     NA       ACTB    NA           
+ 5 group_var     7  11.7   1.67       6.29   7.05e-7 PGK1     0.00000317  
+ 6 Residuals   284  75.4   0.266     NA     NA       PGK1    NA           
+ 7 group_var     7   5.17  0.738      7.93   8.63e-9 HPRT1    0.0000000776
+ 8 Residuals   284  26.4   0.0931    NA     NA       HPRT1   NA           
+ 9 group_var     7   1.06  0.152      2.21   3.32e-2 GAPDH    0.0499      
+10 Residuals   284  19.5   0.0687    NA     NA       GAPDH   NA           
+11 group_var     7   0.513 0.0733     1.11   3.56e-1 UBC      0.401       
+12 Residuals   284  18.7   0.0660    NA     NA       UBC     NA           
+13 group_var     7   0.532 0.0760     0.761  6.20e-1 RPL36AL  0.620       
+14 Residuals   284  28.3   0.0998    NA     NA       RPL36AL NA           
+15 group_var     7   6.07  0.868      2.23   3.18e-2 B2M      0.0499      
+16 Residuals   284 110.    0.389     NA     NA       B2M     NA           
+17 group_var     7   1.75  0.250      2.54   1.51e-2 RPL13A   0.0340      
+18 Residuals   284  28.0   0.0985    NA     NA       RPL13A  NA           
+\end{verbatim}
+
+\begin{verbatim}
+# A tibble: 252 x 7
+# Groups:   Gene [9]
+       diff     lwr     upr p_value Gene  comparison            p_adj
+      <dbl>   <dbl>   <dbl>   <dbl> <chr> <chr>                 <dbl>
+ 1 -0.0412  -0.226   0.143   0.997  TBP   40s male-40s female   1.000
+ 2 -0.0393  -0.141   0.0627  0.938  TBP   50s female-40s female 1.000
+ 3  0.0402  -0.0724  0.153   0.959  TBP   50s male-40s female   1.000
+ 4 -0.0230  -0.123   0.0767  0.997  TBP   60s female-40s female 1.000
+ 5  0.00760 -0.0972  0.112   1.000  TBP   60s male-40s female   1.000
+ 6 -0.0131  -0.163   0.137   1.000  TBP   70s female-40s female 1.000
+ 7 -0.180   -0.343  -0.0168  0.0193 TBP   70s male-40s female   0.180
+ 8  0.00187 -0.173   0.176   1.000  TBP   50s female-40s male   1.000
+ 9  0.0813  -0.0996  0.262   0.869  TBP   50s male-40s male     1.000
+10  0.0181  -0.155   0.191   1.000  TBP   60s female-40s male   1.000
+# i 242 more rows
+\end{verbatim}
+
+\section{Discussion}\label{discussion}
+
+\section{Conclusion}\label{conclusion}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\section*{References}\label{references}
+\addcontentsline{toc}{section}{References}
+
+\phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-artyukhov2017}
+Artyukhov, A. S., Dashinimaev, E. B., Tsvetkov, V. O., Bolshakov, A. P.,
+Konovalova, E. V., Kolbaev, S. N., Vorotelyak, E. A. \& Vasiliev, A. V.
+(2017). New genes for accurate normalization of qRT-PCR results in study
+of iPS and iPS-derived cells. \emph{Gene}, \emph{626}, 234--240.
+\url{https://doi.org/10.1016/j.gene.2017.05.045}
+
+\bibitem[\citeproctext]{ref-carcamo-orive2017}
+Carcamo-Orive, I., Hoffman, G. E., Cundiff, P., Beckmann, N. D.,
+D'Souza, S. L., Knowles, J. W., Patel, A., Papatsenko, D., Abbasi, F.,
+Reaven, G. M., Whalen, S., Lee, P., Shahbazi, M., Henrion, M. Y. R.,
+Zhu, K., Wang, S., Roussos, P., Schadt, E. E., Pandey, G., \ldots{}
+Lemischka, I. (2017). Analysis of Transcriptional Variability in a Large
+Human iPSC Library Reveals Genetic and Non-genetic Determinants of
+Heterogeneity. \emph{Cell Stem Cell}, \emph{20}(4), 518--532.e9.
+\url{https://doi.org/10.1016/j.stem.2016.11.005}
+
+\bibitem[\citeproctext]{ref-cerneckis2024}
+Cerneckis, J., Cai, H. \& Shi, Y. (2024). Induced pluripotent stem cells
+(iPSCs): molecular mechanisms of induction and applications.
+\emph{Signal Transduction and Targeted Therapy}, \emph{9}(1), 112.
+\url{https://doi.org/10.1038/s41392-024-01809-0}
+
+\bibitem[\citeproctext]{ref-panina2020}
+Panina, Y., Germond, A. \& Watanabe, T. M. (2020). Analysis of the
+stability of 70 housekeeping genes during iPS reprogramming.
+\emph{Scientific Reports}, \emph{10}, 21711.
+\url{https://doi.org/10.1038/s41598-020-78863-5}
+
+\bibitem[\citeproctext]{ref-poetsch2022}
+Poetsch, M. S., Strano, A. \& Guan, K. (2022). Human induced pluripotent
+stem cells: From cell origin, genomic stability, and epigenetic memory
+to translational medicine. \emph{Stem Cells}, \emph{40}(6), 546--555.
+\url{https://doi.org/10.1093/stmcls/sxac020}
+
+\bibitem[\citeproctext]{ref-takahashi2007}
+Takahashi, K., Tanabe, K., Ohnuki, M., Narita, M., Ichisaka, T., Tomoda,
+K. \& Yamanaka, S. (2007). Induction of pluripotent stem cells from
+adult human fibroblasts by defined factors. \emph{Cell}, \emph{131}(5),
+861--872. \url{https://doi.org/10.1016/j.cell.2007.11.019}
+
+\bibitem[\citeproctext]{ref-wang2009}
+Wang, Z., Gerstein, M. \& Snyder, M. (2009). RNA-seq: A revolutionary
+tool for transcriptomics. \emph{Nature Reviews. Genetics}, \emph{10}(1),
+57--63. \url{https://doi.org/10.1038/nrg2484}
+
+\bibitem[\citeproctext]{ref-R-tidyverse}
+Wickham, H. (2023). \emph{Tidyverse: Easily install and load the
+tidyverse}. \url{https://tidyverse.tidyverse.org}
+
+\bibitem[\citeproctext]{ref-R-ggplot2}
+Wickham, H., Chang, W., Henry, L., Pedersen, T. L., Takahashi, K.,
+Wilke, C., Woo, K., Yutani, H., Dunnington, D. \& van den Brand, T.
+(2025). \emph{ggplot2: Create elegant data visualisations using the
+grammar of graphics}. \url{https://ggplot2.tidyverse.org}
+
+\bibitem[\citeproctext]{ref-R-dplyr}
+Wickham, H., François, R., Henry, L., Müller, K. \& Vaughan, D. (2023).
+\emph{Dplyr: A grammar of data manipulation}.
+\url{https://dplyr.tidyverse.org}
+
+\bibitem[\citeproctext]{ref-R-scales}
+Wickham, H., Pedersen, T. L. \& Seidel, D. (2025). \emph{Scales: Scale
+functions for visualization}. \url{https://scales.r-lib.org}
+
+\end{CSLReferences}
+
+
+
+
+\end{document}

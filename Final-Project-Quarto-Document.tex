@@ -65,6 +65,46 @@
 \fi
 \makeatother
 
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{241,243,245}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.40,0.45,0.13}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\BuiltInTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\ExtensionTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.28,0.35,0.67}{#1}}
+\newcommand{\ImportTok}[1]{\textcolor[rgb]{0.00,0.46,0.62}{#1}}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.68,0.00,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{\textcolor[rgb]{0.00,0.23,0.31}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.07,0.07,0.07}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.13,0.47,0.30}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.37,0.37,0.37}{\textit{#1}}}
 
 \usepackage{longtable,booktabs,array}
 \usepackage{calc} % for calculating minipage widths
@@ -204,7 +244,7 @@
 \makeatother
 \subtitle{Final Project}
 \author{Trinity Minard}
-\date{2025-11-18}
+\date{2025-11-19}
 \begin{document}
 \maketitle
 
@@ -366,8 +406,230 @@ type of RNA and plotted as a pie chart. Small categories (\textless{} 2
 [1] TRUE
 \end{verbatim}
 
-Figure 3. Expression of Pluripotency Genes (SOX2, OCT4, KLF4, c-Myc,
-TRA-181, TRA-1-60, NANOG, SSEA4)
+Figure 3. Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4,
+MYC (c-Myc), TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A,
+LIN28B, ESRRB, PRDM14, ZRP42 (REX1), TFCP2L1
+
+(ectoderm: PAX6, NESTIN or SOX1 (neural projenitor/stem cell markers),
+KRT14 (epithelial), endoderm: SOX17, AFP (hepatic), PDX1 (pancreatic),
+mesoderm: CD34 (hematopoitic), CD90 (mesenchymal), NKX2.5 (cardiac
+progenitor))
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#create a list of pluripotency, differentiation, and housekeeping genes}
+\NormalTok{pluripotency\_genes }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"SOX2"}\NormalTok{, }\StringTok{"POU5F1"}\NormalTok{, }\StringTok{"KLF4"}\NormalTok{, }\StringTok{"MYC"}\NormalTok{,}
+                        \StringTok{"PODXL"}\NormalTok{, }\StringTok{"NANOG"}\NormalTok{, }\StringTok{"FUT4"}\NormalTok{, }\StringTok{"LIN28A"}\NormalTok{, }
+                        \StringTok{"LIN28B"}\NormalTok{, }\StringTok{"ESRRB"}\NormalTok{, }\StringTok{"PRDM14"}\NormalTok{, }\StringTok{"TFCP2L1"}\NormalTok{)}
+
+\NormalTok{differentiation\_genes }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"SOX1"}\NormalTok{,}\StringTok{"PAX6"}\NormalTok{,}\StringTok{"NESTIN"}\NormalTok{,}\StringTok{"KRT14"}\NormalTok{, }
+                           \StringTok{"SOX17"}\NormalTok{, }\StringTok{"AFP"}\NormalTok{, }\StringTok{"PDX1"}\NormalTok{, }\StringTok{"CD34"}\NormalTok{, }
+                           \StringTok{"CD90"}\NormalTok{, }\StringTok{"NKX2.5"}\NormalTok{)}
+
+\NormalTok{housekeeping\_genes }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"ACTB"}\NormalTok{,}\StringTok{"GAPDH"}\NormalTok{,}\StringTok{"RPL13A"}\NormalTok{,}\StringTok{"HPRT1"}\NormalTok{,}
+                        \StringTok{"B2M"}\NormalTok{,}\StringTok{"TBP"}\NormalTok{,}\StringTok{"PGK1"}\NormalTok{,}\StringTok{"UBC"}\NormalTok{, }\StringTok{"RPL36AL"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-Quarto-Document_files/figure-pdf/fig-pluripotency-1.pdf}}
+
+}
+
+\caption{\label{fig-pluripotency}Expression of Pluripotency Genes}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-Quarto-Document_files/figure-pdf/fig-pluripotency2-1.pdf}}
+
+}
+
+\caption{\label{fig-pluripotency2}Expression of Pluripotency Genes}
+
+\end{figure}%
+
+\begin{verbatim}
+character(0)
+\end{verbatim}
+
+\begin{verbatim}
+Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: Expression ~ sex + age_decade + (1 | `Gene name`)
+   Data: logCPM_pluripotency
+
+REML criterion at convergence: 4860
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-4.5766 -0.5524  0.0324  0.5434  5.6678 
+
+Random effects:
+ Groups    Name        Variance Std.Dev.
+ Gene name (Intercept) 12.0276  3.4681  
+ Residual               0.2103  0.4586  
+Number of obs: 3696, groups:  Gene name, 12
+
+Fixed effects:
+                Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)      6.18060    1.00136   11.00810   6.172 6.96e-05 ***
+sexmale          0.03648    0.01574 3680.00000   2.318   0.0205 *  
+age_decade50s   -0.02250    0.02441 3680.00000  -0.922   0.3568    
+age_decade60s    0.01016    0.02370 3680.00000   0.429   0.6681    
+age_decade70s    0.08018    0.03245 3680.00000   2.471   0.0135 *  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Correlation of Fixed Effects:
+            (Intr) sexmal ag_d50 ag_d60
+sexmale     -0.003                     
+age_decd50s -0.017 -0.131              
+age_decd60s -0.017 -0.156  0.742       
+age_decd70s -0.013 -0.098  0.540  0.558
+\end{verbatim}
+
+\begin{verbatim}
+Type III Analysis of Variance Table with Satterthwaite's method
+           Sum Sq Mean Sq NumDF DenDF F value   Pr(>F)   
+sex        1.1296 1.12964     1  3680  5.3721 0.020516 * 
+age_decade 2.8948 0.96492     3  3680  4.5887 0.003278 **
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{verbatim}
+$emmeans
+ age_decade emmean SE  df asymp.LCL asymp.UCL
+ 40s          6.20  1 Inf      4.24      8.16
+ 50s          6.18  1 Inf      4.21      8.14
+ 60s          6.21  1 Inf      4.25      8.17
+ 70s          6.28  1 Inf      4.32      8.24
+
+Results are averaged over the levels of: sex 
+Degrees-of-freedom method: asymptotic 
+Confidence level used: 0.95 
+
+$contrasts
+ contrast  estimate     SE  df z.ratio p.value
+ 40s - 50s   0.0225 0.0244 Inf   0.922  0.7933
+ 40s - 60s  -0.0102 0.0237 Inf  -0.429  0.9736
+ 40s - 70s  -0.0802 0.0325 Inf  -2.471  0.0646
+ 50s - 60s  -0.0327 0.0173 Inf  -1.887  0.2335
+ 50s - 70s  -0.1027 0.0282 Inf  -3.643  0.0015
+ 60s - 70s  -0.0700 0.0275 Inf  -2.545  0.0533
+
+Results are averaged over the levels of: sex 
+Degrees-of-freedom method: asymptotic 
+P value adjustment: tukey method for comparing a family of 4 estimates 
+\end{verbatim}
+
+\begin{verbatim}
+$emmeans
+ sex    emmean SE  df asymp.LCL asymp.UCL
+ female   6.20  1 Inf      4.24      8.16
+ male     6.23  1 Inf      4.27      8.20
+
+Results are averaged over the levels of: age_decade 
+Degrees-of-freedom method: asymptotic 
+Confidence level used: 0.95 
+
+$contrasts
+ contrast      estimate     SE  df z.ratio p.value
+ female - male  -0.0365 0.0157 Inf  -2.318  0.0205
+
+Results are averaged over the levels of: age_decade 
+Degrees-of-freedom method: asymptotic 
+\end{verbatim}
+
+Fixed effects Sex effect (male): Expression is slightly higher in males
+by 0.036 logCPM; significant at p = 0.0196.
+
+Age effects: Only the 70s group is significantly higher than 40s (p =
+0.0125). 50s and 60s are not significantly different from 40s.
+
+Type III Analysis of Variance Table with Satterthwaite's method -
+confirms both sex and age\_decade have a significant effect on
+pluripotency gene expression when averaged across all genes.
+
+Predicted mean logCPM expression (adjusted means, not raw means)
+
+age\_decade emmean 40s 6.20 50s 6.18 60s 6.21 70s 6.28
+
+Overall, pluripotency gene expression is slightly higher in males
+compared to females, regardless of age. Expression also shows an
+increasing trend with age, with samples from individuals in their 70s
+being significantly higher than those from individuals in their 40s.
+Differences between other age decades (50s, 60s) and 40s were not
+statistically significant.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#ANOVA and Tukey HSD}
+
+\CommentTok{\#create empty dataframes to store results}
+\NormalTok{gene\_anova\_results }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{()}
+\NormalTok{gene\_tukey\_results }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{()}
+
+\CommentTok{\#use a for loop to loop through each gene and perform an ANOVa and tukey tests}
+\ControlFlowTok{for}\NormalTok{ (g }\ControlFlowTok{in} \FunctionTok{unique}\NormalTok{(logCPM\_pluripotency}\SpecialCharTok{$}\StringTok{\textasciigrave{}}\AttributeTok{Gene name}\StringTok{\textasciigrave{}}\NormalTok{)) \{}
+  
+\NormalTok{  gene\_data }\OtherTok{\textless{}{-}}\NormalTok{ logCPM\_pluripotency }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{filter}\NormalTok{(}\StringTok{\textasciigrave{}}\AttributeTok{Gene name}\StringTok{\textasciigrave{}} \SpecialCharTok{==}\NormalTok{ g)}
+  
+  \CommentTok{\# One{-}way ANOVA (Expression \textasciitilde{} sex\_age)}
+\NormalTok{  fit }\OtherTok{\textless{}{-}} \FunctionTok{aov}\NormalTok{(Expression }\SpecialCharTok{\textasciitilde{}}\NormalTok{ age\_sex, }\AttributeTok{data =}\NormalTok{ gene\_data)}
+  
+  \CommentTok{\# Save tidy ANOVA table}
+\NormalTok{  anova\_tbl }\OtherTok{\textless{}{-}}\NormalTok{ broom}\SpecialCharTok{::}\FunctionTok{tidy}\NormalTok{(fit) }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Gene =}\NormalTok{ g)}
+  
+\NormalTok{  gene\_anova\_results }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(gene\_anova\_results, anova\_tbl)}
+  
+  \CommentTok{\# Tukey HSD post{-}hoc for age\_sex}
+\NormalTok{  tukey }\OtherTok{\textless{}{-}} \FunctionTok{TukeyHSD}\NormalTok{(fit, }\StringTok{"age\_sex"}\NormalTok{)}
+\NormalTok{  tukey\_df }\OtherTok{\textless{}{-}} \FunctionTok{as.data.frame}\NormalTok{(tukey}\SpecialCharTok{$}\NormalTok{age\_sex) }\SpecialCharTok{\%\textgreater{}\%}
+    \FunctionTok{rename}\NormalTok{(}\AttributeTok{p\_value =} \StringTok{\textasciigrave{}}\AttributeTok{p adj}\StringTok{\textasciigrave{}}\NormalTok{) }\SpecialCharTok{\%\textgreater{}\%} 
+    \FunctionTok{mutate}\NormalTok{(}\AttributeTok{Gene =}\NormalTok{ g,}
+           \AttributeTok{comparison =} \FunctionTok{rownames}\NormalTok{(.))}
+  
+\NormalTok{  gene\_tukey\_results }\OtherTok{\textless{}{-}} \FunctionTok{rbind}\NormalTok{(gene\_tukey\_results, tukey\_df)}
+\NormalTok{\}}
+
+\CommentTok{\# ANOVA FDR correction}
+\NormalTok{pluripotency\_gene\_anova\_results }\OtherTok{\textless{}{-}}\NormalTok{ gene\_anova\_results }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(term) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{p\_adj =} \FunctionTok{p.adjust}\NormalTok{(p.value, }\AttributeTok{method =} \StringTok{"BH"}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{ungroup}\NormalTok{()}
+
+\CommentTok{\# Tukey HSD p{-}value adjustment}
+\NormalTok{pluripotency\_gene\_tukey\_results }\OtherTok{\textless{}{-}}\NormalTok{ gene\_tukey\_results }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{group\_by}\NormalTok{(Gene) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{p\_adj =} \FunctionTok{p.adjust}\NormalTok{(p\_value, }\AttributeTok{method =} \StringTok{"BH"}\NormalTok{))  }
+
+\CommentTok{\#see the number of p values less than 0.05}
+\CommentTok{\#sum(gene\_tukey\_results$p\_value \textless{} 0.05, na.rm = TRUE)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+
+\centering{
+
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-Quarto-Document_files/figure-pdf/fig-bargraph-pluripotency-1.pdf}}
+
+}
+
+\caption{\label{fig-bargraph-pluripotency}Pluripotency Gene Expression
+by Age and Sex.}
+
+\end{figure}%
 
 Figure 4. Expression of Differentiation Genes (ectoderm: PAX6, NESTIN or
 SOX1 (neural projenitor/stem cell markers), KRT14 (epithelial),

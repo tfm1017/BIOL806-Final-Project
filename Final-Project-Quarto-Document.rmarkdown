@@ -87,7 +87,7 @@ housekeeping genes.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 #create list of packages to cite
-packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales", "pheatmap")
+packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales", "pheatmap", "lme4", "lmerTest", "emmeans", "broom", "ggsignif", "ggsci")
 #citing R and packages
 knitr::write_bib(packages, "packages.bib")
 ```
@@ -144,6 +144,13 @@ library(dplyr)
 library(scales)
 library(ggrepel)
 library(pheatmap)
+library(lme4)
+library(lmerTest)  
+library(emmeans)
+library(broom)
+library(ggplot2)
+library(ggsignif)
+library(ggsci)
 
 #import data files
 raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
@@ -346,11 +353,194 @@ logCPM_named <- logCPM_named %>%
 
 Figure 3. Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
 TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A, LIN28B, ESRRB, PRDM14, ZRP42 (REX1), TFCP2L1
-```{r fig-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
-#create a list of pluripotency genes 
+
+(ectoderm: PAX6, NESTIN or
+SOX1 (neural projenitor/stem cell markers), KRT14 (epithelial),
+endoderm: SOX17, AFP (hepatic), PDX1 (pancreatic), mesoderm: CD34
+(hematopoitic), CD90 (mesenchymal), NKX2.5 (cardiac progenitor))
+
+```{r}
+#create a list of pluripotency, differentiation, and housekeeping genes
 pluripotency_genes <- c("SOX2", "POU5F1", "KLF4", "MYC",
                         "PODXL", "NANOG", "FUT4", "LIN28A", 
-                        "LIN28B", "ESRRB", "PRDM14", "ZFP42", "TFCP2L1")
+                        "LIN28B", "ESRRB", "PRDM14", "TFCP2L1")
+
+differentiation_genes <- c("SOX1","PAX6","NESTIN","KRT14", 
+                           "SOX17", "AFP", "PDX1", "CD34", 
+                           "CD90", "NKX2.5")
+
+housekeeping_genes <- c("ACTB","GAPDH","RPL13A","HPRT1",
+                        "B2M","TBP","PGK1","UBC", "RPL36AL")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#utilize a function to generate heatmap, lmm, and bar graph with ANOVA and Tukey HSD
+
+run_gene_analysis <- function(gene_list, gene_set_name) {
+  
+  # Filter logCPM to the selected genes and pivot long
+  df <- logCPM_named %>%
+    select(-`Gene stable ID`) %>%
+    filter(`Gene name` %in% gene_list) %>%
+    pivot_longer(-`Gene name`, names_to = "Sample", 
+                 values_to = "Expression") %>%
+    left_join(
+      raw_counts %>% select(sample_id, sex, age_numeric, age_decade),
+      by = c("Sample" = "sample_id")) %>%
+    mutate(age_sex = paste(age_decade, sex, sep = " ")) %>%
+    filter(!is.na(age_decade) & !is.na(sex))
+  
+  # Mixed model
+  lmm <- lmer(Expression ~ sex + age_decade + (1|`Gene name`), data = df)
+  
+  # create empty dataframes to store results
+  gene_anova <- data.frame()
+  gene_tukey <- data.frame()
+  
+#use a for loop to loop through each gene and perform an ANOVa and tukey tests
+  for (g in unique(df$`Gene name`)) {
+    gdat <- df %>% filter(`Gene name` == g)
+    # One-way ANOVA (Expression ~ sex_age)
+    fit <- aov(Expression ~ age_sex, data = gdat)
+    
+    # Save tidy ANOVA table
+    gene_anova <- rbind(
+      gene_anova,
+      broom::tidy(fit) %>% mutate(Gene = g))
+    
+    # Tukey HSD post-hoc for age_sex
+    tk <- TukeyHSD(fit, "age_sex")
+    tkdf <- as.data.frame(tk$age_sex) %>%
+      rename(p_value = `p adj`) %>%
+      mutate(Gene = g, comparison = rownames(.))
+    
+    gene_tukey <- rbind(gene_tukey, tkdf)
+    
+  # FDR correction for ANOVA
+anova_fdr <- gene_anova %>%
+  group_by(term) %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
+  ungroup()
+
+# FDR correction for Tukey HSD
+tukey_fdr <- gene_tukey %>%
+  group_by(Gene) %>%
+  mutate(p_adj = p.adjust(p_value, method = "BH"))
+  }
+  
+  # Summaries for plotting
+  summary_df <- df %>%
+    group_by(`Gene name`, age_sex) %>%
+    summarize(
+      mean_expr = mean(Expression),
+      SE_expr   = sd(Expression)/sqrt(n()),
+      .groups = "drop"
+    ) %>%
+    rename(Gene = `Gene name`, `Sample name` = age_sex)
+  
+  # Significant pairs
+  sig_pairs <- gene_tukey %>%
+    filter(p_value < 0.05) %>%
+    mutate(
+      annotations = case_when(
+        p_value < 0.001 ~ "***",
+        p_value < 0.01  ~ "**",
+        TRUE ~ "*"
+      ),
+      group1 = sub("-.*", "", comparison),
+      group2 = sub(".*-", "", comparison)
+    ) %>%
+    select(Gene, group1, group2, p_value, annotations)
+  
+  if (nrow(sig_pairs) > 0) {
+    sig_pairs <- sig_pairs %>%
+      left_join(
+        summary_df %>%
+          group_by(Gene) %>%
+          summarize(max_bar = max(mean_expr + SE_expr)),
+        by = "Gene"
+      ) %>%
+      group_by(Gene) %>%
+      mutate(y_position = max_bar * (1 + 0.3 * row_number())) %>%
+      ungroup()
+  }
+  
+  # Bar graph
+  plot <- ggplot(summary_df, aes(x = `Sample name`, y = mean_expr, fill = `Sample name`)) +
+    geom_col() +
+    geom_errorbar(aes(ymin = mean_expr - SE_expr, ymax = mean_expr + SE_expr),
+                  width = 0.2) +
+    facet_wrap(~ Gene, scales = "free_y") +
+    scale_fill_d3("category20c") +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1),
+          legend.position = "top",
+          strip.text = element_text(size = 12, face = "bold")) +
+    labs(title = paste(gene_set_name, "Gene Expression"),
+         y = "Log2 CPM")
+  
+  if (nrow(sig_pairs) > 0) {
+    plot <- plot +
+      geom_signif(
+        data = sig_pairs,
+        aes(xmin = group1, xmax = group2, y_position = y_position,
+            annotations = annotations),
+        manual = TRUE,
+        inherit.aes = FALSE
+      )
+  }
+
+  heatmap_mat <- df %>%
+  group_by(`Gene name`, age_sex) %>%
+  summarize(Expression = mean(Expression, na.rm = TRUE),
+            .groups = "drop") %>%
+  pivot_wider(names_from = age_sex, values_from = Expression) %>%
+  column_to_rownames("Gene name") %>%
+  as.matrix()
+
+heatmap_obj <- pheatmap::pheatmap(
+  heatmap_mat,
+  scale = "row",                 
+  cluster_rows = TRUE,           
+  cluster_cols = FALSE,          
+  show_rownames = TRUE,
+  show_colnames = TRUE,
+  fontsize_row = 10,
+  fontsize_col = 12,
+  main = "Pluripotency Gene Expression by Age and Sex",
+  cellwidth = 50,                
+  cellheight = 25,
+  silent = TRUE)
+
+  # Return everything
+  list(
+  data   = df,
+  lmm    = lmm,
+  anova  = gene_anova,
+  anova_fdr = anova_fdr,      
+  tukey  = gene_tukey,
+  tukey_fdr = tukey_fdr,      
+  plot   = plot
+  )
+}
+
+pluri_results  <- run_gene_analysis(pluripotency_genes, "Pluripotency")
+diff_results   <- run_gene_analysis(differentiation_genes, "Differentiation")
+house_results  <- run_gene_analysis(housekeeping_genes, "Housekeeping")
+```
+
+
+```{r fig-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
+pluri_results$heatmap
+```
+
+```{r fig-pluripotency2, fig.cap = "Expression of Pluripotency Genes", fig.width=10, fig.height=8, echo=FALSE, warning=FALSE, message=FALSE}
+pluri_results$plot
+```
+
+```{r, warning=FALSE, message=FALSE}
+#manual analysis before using function 
+
 #create a data frame with just pluripotency genes, samples, and their log expression 
 logCPM_pluripotency <- logCPM_named %>%
   select(-`Gene stable ID`) %>%
@@ -371,31 +561,156 @@ logCPM_pluripotency <- logCPM_pluripotency %>%
 missing_genes <- setdiff(pluripotency_genes, logCPM_pluripotency$`Gene name`)
 missing_genes
 
-#can now plot data as violin, bar graph, boxplot, heatmap, etc.
+#linear mixed model for pluripotency gene expression across iPSC samples
 
-#summarize average expression and create matrix
-expr_by_age <- logCPM_pluripotency %>%
-  group_by(`Gene name`, age_sex) %>%
-  summarize(Expression = mean(Expression, na.rm = TRUE),
-            .groups = "drop") %>%
-  pivot_wider(names_from = age_sex, values_from = Expression) %>%
-  column_to_rownames("Gene name") %>%
-  as.matrix()
+# Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts, since expression levels vary by gene
+lmm <- lmer(Expression ~ sex + age_decade + (1|`Gene name`), 
+            data = logCPM_pluripotency)
 
-#create heatmap 
-pheatmap(
-  expr_by_age,
-  scale = "row",                 
-  cluster_rows = TRUE,           
-  cluster_cols = FALSE,          
-  show_rownames = TRUE,
-  show_colnames = TRUE,
-  fontsize_row = 10,
-  fontsize_col = 12,
-  main = "Pluripotency Gene Expression by Age and Sex",
-  cellwidth = 50,                
-  cellheight = 25)
+summary(lmm)
+#type III ANOVA to test significance of fixed effects on expression
+anova(lmm)  
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+emmeans(lmm, pairwise ~ age_decade)
+emmeans(lmm, pairwise ~ sex)
 ```
+
+Fixed effects
+Sex effect (male): Expression is slightly higher in males by 0.036 logCPM; significant at p = 0.0196.
+
+Age effects: Only the 70s group is significantly higher than 40s (p = 0.0125). 50s and 60s are not significantly different from 40s.
+
+Type III Analysis of Variance Table with Satterthwaite's method - confirms both sex and age_decade have a significant effect on pluripotency gene expression when averaged across all genes.
+
+Predicted mean logCPM expression (adjusted means, not raw means)
+
+age_decade emmean
+ 40s          6.20 
+ 50s          6.18 
+ 60s          6.21 
+ 70s          6.28 
+ 
+Overall, pluripotency gene expression is slightly higher in males compared to females, regardless of age. Expression also shows an increasing trend with age, with samples from individuals in their 70s being significantly higher than those from individuals in their 40s. Differences between other age decades (50s, 60s) and 40s were not statistically significant.
+
+```{r}
+#ANOVA and Tukey HSD
+
+#create empty dataframes to store results
+gene_anova_results <- data.frame()
+gene_tukey_results <- data.frame()
+
+#use a for loop to loop through each gene and perform an ANOVa and tukey tests
+for (g in unique(logCPM_pluripotency$`Gene name`)) {
+  
+  gene_data <- logCPM_pluripotency %>%
+    filter(`Gene name` == g)
+  
+  # One-way ANOVA (Expression ~ sex_age)
+  fit <- aov(Expression ~ age_sex, data = gene_data)
+  
+  # Save tidy ANOVA table
+  anova_tbl <- broom::tidy(fit) %>%
+    mutate(Gene = g)
+  
+  gene_anova_results <- rbind(gene_anova_results, anova_tbl)
+  
+  # Tukey HSD post-hoc for age_sex
+  tukey <- TukeyHSD(fit, "age_sex")
+  tukey_df <- as.data.frame(tukey$age_sex) %>%
+    rename(p_value = `p adj`) %>% 
+    mutate(Gene = g,
+           comparison = rownames(.))
+  
+  gene_tukey_results <- rbind(gene_tukey_results, tukey_df)
+}
+
+# ANOVA FDR correction
+pluripotency_gene_anova_results <- gene_anova_results %>%
+  group_by(term) %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
+  ungroup()
+
+# Tukey HSD p-value adjustment
+pluripotency_gene_tukey_results <- gene_tukey_results %>%
+  group_by(Gene) %>%
+  mutate(p_adj = p.adjust(p_value, method = "BH"))  
+
+#see the number of p values less than 0.05
+#sum(gene_tukey_results$p_value < 0.05, na.rm = TRUE)
+```
+
+```{r fig-bargraph-pluripotency, fig.cap = "Pluripotency Gene Expression by Age and Sex.", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+#graph Tukey HSD results using bar graph 
+
+#summarize mean and SE
+pluripotency_summary_data <- logCPM_pluripotency %>%
+  group_by(`Gene name`, age_sex) %>%
+  summarize(
+    mean_expr = mean(Expression, na.rm = TRUE),
+    SE_expr = sd(Expression, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop") %>%
+  rename(Gene = `Gene name`, `Sample name` = age_sex)
+
+# keep only significant pairs (adjusted p < 0.05)
+pluripotency_all_sig_pairs <- gene_tukey_results %>%
+  filter(p_value < 0.05) %>%
+  mutate(
+    annotations = case_when(
+      p_value < 0.001 ~ "***",
+      p_value < 0.01  ~ "**",
+      p_value < 0.05  ~ "*",
+      TRUE ~ ""),
+    group1 = sub("-.*", "", comparison),  
+    group2 = sub(".*-", "", comparison)) %>%
+  select(Gene, group1, group2, p_value, annotations)
+
+#calculate y position for significance asterisks 
+if(nrow(pluripotency_all_sig_pairs) > 0){
+  pluripotency_all_sig_pairs <- pluripotency_all_sig_pairs %>%
+    left_join(
+      pluripotency_summary_data %>%
+        group_by(Gene) %>%
+        summarize(max_bar = max(mean_expr + SE_expr, na.rm = TRUE)),
+      by = "Gene") %>%
+    group_by(Gene) %>%
+    mutate(pair_index = row_number(),
+           y_position = max_bar * (1 + 1.2 * pair_index)) %>%  
+    ungroup()
+}
+
+pluripotency_bargraph <- ggplot(pluripotency_summary_data, aes(x = `Sample name`, y = mean_expr, fill = `Sample name`)) +
+  geom_col(position = position_dodge(width = 0.9)) +
+  geom_errorbar(aes(ymin = mean_expr - SE_expr, ymax = mean_expr + SE_expr),
+                position = position_dodge(width = 0.9), width = 0.2) +
+  facet_wrap(~ Gene, scales = "free_y") +
+  scale_y_continuous(expand = expansion(mult = c(0.02, 0.2))) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = "top",
+        panel.spacing = unit(1.2, "lines"),
+        panel.clip = "off",
+        axis.text.y = element_text(size = 12),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        strip.text = element_text(size = 12, face = "bold")) +
+  labs(y = "Log2(Counts Per Million)",
+       x = "Sample",
+       fill ="Sample:") +
+  scale_fill_d3("category20c")
+
+if(nrow(pluripotency_all_sig_pairs) > 0){
+  pluripotency_bargraph <- pluripotency_bargraph + geom_signif(data = pluripotency_all_sig_pairs, 
+      aes(xmin = group1, xmax = group2, y_position = y_position,
+      annotations = annotations),
+      manual = TRUE, inherit.aes = FALSE, color = "black", textsize = 5)
+}
+
+pluripotency_bargraph
+```
+
 
 Figure 4. Expression of Differentiation Genes (ectoderm: PAX6, NESTIN or
 SOX1 (neural projenitor/stem cell markers), KRT14 (epithelial),
@@ -422,3 +737,4 @@ figures will include heat maps, bar charts, and possibly volcano plots
 ------------------------------------------------------------------------
 
 # References
+
