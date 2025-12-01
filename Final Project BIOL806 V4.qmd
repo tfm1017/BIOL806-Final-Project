@@ -1,0 +1,1259 @@
+---
+title: "Analysis of iPSC Gene Expression (will be changed)"
+subtitle: "Final Project"
+author: "Trinity Minard"
+date: "`r format(Sys.Date(), '%Y-%m-%d')`"
+format:
+  pdf:
+    keep-tex: true
+editor_options:
+  markdown:
+    wrap: 72
+  chunk_output_type: inline
+bibliography:
+  - references.bib
+  - packages.bib
+csl: norsk-apa-manual.csl
+---
+
+# Introduction
+
+The discovery of human induced pluripotent stem cells (iPSCs) by
+Takahashi and Yamanaka in 2007 [@takahashi2007] has revolutionized the
+regenerative medicine field. iPSCs are created by reprogramming somatic
+cells into an embryonic like state using the Yamanaka transciption
+factors: SOX2, OCT4, KLF4, and c-Myc). These cells have vast
+capabilities due to their ability to model human development and
+diseases *in vitro*, and their potential for patient specific
+(autologous) and "off the shelf" (allogeneic) cell therapies
+[@cerneckis2024].
+
+With that being said, the characterization of iPSC lines is essential in
+any experimental or manufacturing process to ensure consistency in
+culturing. This includes analyzing the expression of pluripotency (stem
+cell) markers, differentiation markers, and potential chromosomal
+abnormalies, to access the population of the culture. This is commonly
+done using techniques such as reverse transcriptase or real time
+quantitative PCR (RT-qPCR) to analyze mRNA expression [@artyukhov2017],
+or using an antibody based experiment to analyze protein expression
+levels, such as Flow Cytometry or immunocytochemistry. When conducting
+these experiments, specifically RT-qPCR, reference genes, also known as
+housekeeping genes, are used to normalize the expression of other genes
+in a sample [@artyukhov2017]. This allows the expression of genes to be
+compared across different samples, since it is presumed that the
+expression of the housekeeping gene is consistent across all of the
+samples. In stem cell samples, however, it has been found that the
+commonly used housekeeping genes, such as GAPDH, appear to fluctuate in
+iPSC samples [@panina2020], making it difficult to achieve accurate
+normalization data.
+
+RNA Seq is a technique that sequences the entirety of RNA molecules in a
+given sample, rather than using gene specific primers or probes as in
+RT-qPCR and other techniques. This allows the entire transciptome to be
+analyzed, providing a complete picture of the expression of genes in a
+sample [@wang2009]. Additionally, gene expression is calculated by
+dividing the raw counts of a gene by the total counts in a sample,
+eliminating the need for a housekeeping gene. This allows for an
+unbiased and quantitiative analysis of millions of genes in sample
+[@wang2009]. Despite these advantages, RNA-Seq is far more time
+consuming and expensive than RT-qPCR and other experiments, making it
+non practical in a manufacturing setting. Therefore, utilizing RNA-Seq
+to analyze iPSC samples could provide insight into housekeeping gene
+expression, allowing researchers to select ideal reference genes for
+their analysis.
+
+A similar study, conducted by Carcamo-Orive *et al.,* investigated the
+variability of gene expression across 317 iPSC lines generated from 101
+individuals [@carcamo-orive2017] and created a publically avaible data
+set of their raw RNA Seq data. They found that genetic variability in
+the iPSC lines was influenced by a donor specific gene expression
+pattern, specifically influenced by donor age, sex, ancestry, and
+reprogramming variabilies. iPSCs can also be reprogrammed from a variety
+of somatic cells, such as blood, skin fibroblasts, hair keratinocytes,
+urine cells, mesencymal stem cells, and bone marrow [@poetsch2022].
+While some somatic cells are easier to obtain than others, such as blood
+cells and fibroblasts, iPSCs from these lines are associated with higher
+genomic mutations due to the somatic cells' high turnover rate.
+Additionally, iPSCs appear to have an epigenetic memory of their tissue
+of origin, which has been found to influence their differentiation
+[@poetsch2022]. All of these factors, and many others, could be
+contributing to the variations in gene expression in iPSC samples.
+
+This publicly available dataset from Carcamo-Orive *et al.* was used to
+analyze the expression of RNA across iPSC samples, with a focus on the
+expression of pluripotency markers, differentiation markers, and
+housekeeping genes.
+
+# Methods
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#create list of packages to cite
+packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales", "pheatmap", "lme4", "lmerTest", "emmeans", "broom", "ggsignif", "ggsci", "patchwork", "FactoMineR", "grid", "factoextra", "rstatix", "kableExtra")
+
+#citing R and packages
+knitr::write_bib(packages, "packages.bib")
+```
+
+### Data Cleaning
+
+RNA-Seq counts per million data was acquired from Stemformatics using
+the Carcamo-Orive (2017) dataset [@carcamo-orive2017]. Genes in this
+study were referred to by their Ensembl ID, so gene information, such as
+name and RNA type, was integrated from the Emsembl database.
+
+*further cleaning of the count per million data will be added*
+
+### Figure 1
+
+Genes detected in the RNA Seq counts per million data were grouped into
+the following catagories: Protein coding, long non coding RNA (lncRNA),
+Small RNAs, Pseudogenes, and Other. A count of the number of genes in
+each category was then performed by using the dplyr package [@R-dplyr]
+from tidyverse [@R-tidyverse]. A fraction and percentage were then
+calculated by dividing the count by the sum of count (i.e. total count
+for all categories). The scales [@R-scales] package from ggplot2
+[@R-ggplot2] was used to create a pie chart of the counts by RNA
+category.
+
+*continue methods for following figures ...*
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#library packages
+library(tidyverse)
+library(dplyr)
+library(scales)
+library(ggrepel)
+library(pheatmap)
+library(lme4)
+library(lmerTest)  
+library(emmeans)
+library(broom)
+library(ggplot2)
+library(ggsignif)
+library(ggsci)
+library(patchwork)
+library(FactoMineR)
+library(grid) 
+library(factoextra)
+library(rstatix)
+library(kableExtra)
+library(lattice)
+
+#import data files
+raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
+cpm_data   <- read_tsv("stemformatics_dataset_7274.cpm.tsv")
+ensembl_data <- read_csv("mart_export.txt")
+
+# view data files
+#head(raw_counts)
+#head(cpm_data)
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#Change column name from "0.001" to "Gene Stable ID"
+cpm_data <- cpm_data %>%
+  rename("Gene stable ID" = "...1")
+
+#Create a data frame with only the gene info for the genes in this study
+ensembl_filtered <- ensembl_data %>%
+  filter(`Gene stable ID` %in% cpm_data$`Gene stable ID`)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# Add a new column 'Category' based on 'Gene type'
+ensembl_filtered <- ensembl_filtered %>%
+  mutate(Category = case_when(
+    `Gene type` %in% c("protein_coding") ~ "Protein coding",
+    `Gene type` %in% c("lncRNA", "TEC") ~ "lncRNA",
+    `Gene type` %in% c("miRNA", 
+                          "snoRNA", 
+                          "snRNA", 
+                          "scaRNA", 
+                          "sRNA", 
+                          "vault_RNA", 
+                          "ribozyme") ~ "Small RNAs",
+    `Gene type` %in% c("pseudogene", 
+                          "processed_pseudogene", 
+                          "unprocessed_pseudogene",
+                          "transcribed_unprocessed_pseudogene",
+                          "transcribed_processed_pseudogene",
+                          "unitary_pseudogene", 
+                          "IG_C_pseudogene", 
+                          "IG_V_pseudogene",
+                          "IG_J_pseudogene", 
+                          "TR_J_pseudogene", 
+                          "TR_V_pseudogene",
+                          "translated_processed_pseudogene",
+                        "transcribed_unitary_pseudogene") ~ "Pseudogenes",
+       `Gene type` %in% c("misc_RNA", 
+                          "artifact", 
+                          "Mt_tRNA", 
+                          "IG_V_gene", 
+                          "IG_J_gene", 
+                          "IG_C_gene", 
+                          "IG_D_gene",
+                          "TR_J_gene", 
+                          "TR_V_gene", 
+                          "TR_D_gene", 
+                          "TR_C_gene",
+                          "rRNA", 
+                          "Mt_rRNA", 
+                          "rRNA_pseudogene") ~ "Other",
+   TRUE ~ "Other"))
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#summarize count of genes by RNA category
+RNA_types_summary <- ensembl_filtered %>%
+  count(Category) %>%  # creates a numeric column `n`
+  mutate(
+    fraction   = n / sum(n),
+    label_text = paste0(Category, "\n", round(fraction * 100, 1), "%"),
+    large_slice = fraction > 0.1)
+
+# pivot raw cpm data and add ensembl data information by Gene. then remove NAs
+cpm_long <- cpm_data %>%
+  pivot_longer(-`Gene stable ID`, names_to = "Sample", values_to = "Expression") %>%
+  left_join(ensembl_filtered, by = "Gene stable ID") %>%
+  filter(!is.na(Category), !is.na(Expression)) 
+
+# summarize expression per category 
+cpm_category_summary <- cpm_long %>%
+  group_by(Category) %>%
+  summarize(Total_Expression = sum(Expression)) %>%
+  ungroup() %>%
+  mutate(
+    fraction = Total_Expression / sum(Total_Expression),
+    label_text = paste0(Category, "\n", round(fraction * 100, 1), "%"),
+    label_pos = cumsum(fraction) - fraction / 2,
+    large_slice = fraction > 0.1) 
+```
+
+# Results
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+#manually set colors for each category (using factors was causing issues when plotting)
+slice_colors <- c(
+  "Protein coding" = "#7570b3",
+  "Pseudogenes"    = "#d95f02",
+  "lncRNA"         = "#1b9e77",
+  "Small RNAs"     = "#e7298a",
+  "Other"          = "#66a61e")
+
+#pie chart of RNA categories 
+plot_RNA_types <- ggplot(RNA_types_summary, aes(x = "", y = fraction, fill = Category)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  scale_fill_manual(values = slice_colors) +
+  coord_polar(theta="y") +
+  theme_void() +
+  theme(
+    legend.position = "none",
+    plot.margin = margin(0,0,0,0))
+
+# Extract actual slice positions
+pb <- ggplot_build(plot_RNA_types)
+bar_positions <- pb$data[[1]]  # first layer = geom_bar
+bar_positions$Category <- RNA_types_summary$Category
+bar_positions$label_text <- RNA_types_summary$label_text
+bar_positions$large_slice <- RNA_types_summary$large_slice
+
+# Compute label positions for all slices
+bar_positions <- bar_positions %>%
+  mutate(label_pos = (ymin + ymax)/2)
+
+# Add labels
+plot_RNA_types_final <- plot_RNA_types +
+  # On-slice labels for large slices
+  geom_text(
+    data = subset(bar_positions, large_slice),
+    aes(y = label_pos, label = label_text),
+    color = "white",
+    fontface = "bold",
+    size = 4) +
+  # Repelled labels for small slices
+  geom_text_repel(
+    data = subset(bar_positions, !large_slice),
+    aes(x = 1, y = label_pos, label = label_text),
+    nudge_x = 0.8,
+    force = 0.5,
+    segment.color = "grey60",
+    segment.length = 0.2,
+    size = 4,
+    fontface = "bold",
+    inherit.aes = FALSE) +
+  labs(caption = "Number of Genes per RNA Category") +
+  theme(plot.caption = element_text(size=12, hjust=0.5, face="bold"))
+
+#pie chart of RNA expression
+plot_expression <- ggplot(cpm_category_summary, aes(x = "", y = fraction, fill = Category)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  scale_fill_manual(values = slice_colors) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  theme(
+    legend.position = "none",
+    plot.margin = margin(0, 0, 0, 0))
+
+# Extract actual slice positions from ggplot
+pb <- ggplot_build(plot_expression)
+bar_positions <- pb$data[[1]]  # first layer = geom_bar
+bar_positions$Category <- cpm_category_summary$Category
+bar_positions$label_text <- cpm_category_summary$label_text
+bar_positions$large_slice <- cpm_category_summary$large_slice
+
+# Compute label positions
+bar_positions <- bar_positions %>%
+  mutate(label_pos = (ymin + ymax)/2)
+
+# Add labels
+plot_RNA_expression_final <- plot_expression +
+  # On-slice labels for large slices
+  geom_text(
+    data = subset(bar_positions, large_slice),
+    aes(y = label_pos, label = label_text),
+    color = "white",
+    fontface = "bold",
+    size = 4) +
+  # Repelled labels for small slices
+  geom_text_repel(
+    data = subset(bar_positions, !large_slice),
+    aes(x = 1, y = label_pos, label = label_text),
+    nudge_x = 0.8,
+    force = 0.5,
+    segment.color = "grey60",
+    segment.length = 0.2,
+    size = 4,
+    fontface = "bold",
+    inherit.aes = FALSE) +
+  labs(caption = "Proportion of Total Expression per RNA Category") +
+  theme(plot.caption = element_text(size = 12, hjust = 0.5, face = "bold"))
+```
+
+```{r fig-rna-pie-chart, fig.cap = "Detected RNA Types in iPSC Sample Analzyed using RNA Seq. The number of genes detected in each RNA category from RNA-seq data were counted and plotted as a pie chart (left). Small categories (< 2 %), such as rRNA, tRNA, and immunoglobulin genes, were combined into an 'Other' category. The expression of genes, using raw count per million data, was averaged by type of RNA and plotted as a pie chart (right).", fig.width=10, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+plot_RNA_types_final + plot_RNA_expression_final 
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#begin cleaning data 
+
+#verify that the sample ids match in raw_counts and _cpm_data
+raw_counts <- raw_counts[match(colnames(cpm_data)[-1], raw_counts$sample_id), ]
+
+#all(colnames(cpm_data)[-1] == raw_counts$sample_id)
+
+#convert counts per million to a log scale, excluding the first column which has gene info, and adding an offset so that values use to 0 are not skewed
+logCPM <- cbind(`Gene stable ID` = cpm_data$`Gene stable ID`, log2(cpm_data[,-1] + 0.5))
+
+#summary(raw_counts)
+#unique(raw_counts$parental_cell_type) #all parent cells are blood mononuclear
+#unique(raw_counts$disease_state) #all normal
+#unique(raw_counts$sex) #male and female
+#unique(raw_counts$developmental_stage) #33 ages 
+
+#based on information regarding the samples, sex, age and race differ across the samples.
+
+#age is reported as "age years old", so a new column was added with just the numeric
+raw_counts$age_numeric <- as.numeric(sub("-year-old.*", "", raw_counts$developmental_stage))
+
+#age was then grouped by decade to reduce the number of conditions 
+raw_counts$age_decade <- cut(
+  raw_counts$age_numeric,
+  breaks = seq(40, 80, by = 10),
+  labels = c("40s", "50s", "60s", "70s"),
+  right = FALSE)
+
+#create a new factor column in the raw counts data which combined age and sex 
+raw_counts_cleaned <- raw_counts %>%
+ filter(!is.na(age_decade) & !is.na(sex)) %>%
+  mutate(age_sex = factor(paste(age_decade, sex, sep = " "))) %>%
+  mutate(
+    # iPSC line ID (number_number)
+    line_id = str_extract(sample_description, "\\d+_\\d+"),
+    
+    # sex: look for "female" or "male"
+    sex = str_extract(sample_description, "female|male"),
+    
+    # age in years
+    ageYr = as.numeric(str_extract(sample_description, "\\d+(?=yr)")),
+    
+    # race
+    race = str_extract(sample_description, "caucasian|Asian|South Asian|African American|Hispanic"),
+    
+    # insulin status: "Insulin sensitive" or "Insulin resistant"
+    insulin_status = str_extract(sample_description, "Insulin [a-zA-Z]+")) %>%
+  mutate(
+    sex = factor(sex),
+    race = factor(race),
+    insulin_status = factor(insulin_status)) %>%
+  mutate(race = recode(race,
+                       "caucasian" = "Caucasian"))
+
+#select columns in raw counts which have minimal NAs and are variable
+raw_counts_cleaned <- raw_counts_cleaned %>%
+  select(sample_id, sex, reprogramming_method, 
+         external_source_id, age_numeric, age_decade, 
+         age_sex, race, insulin_status)
+
+# add gene name from ensembl filtered to longCPM data
+logCPM_named <- logCPM %>%
+  left_join(
+    ensembl_filtered %>% dplyr::select(`Gene stable ID`, `Gene name`),
+    by = c("Gene stable ID" = "Gene stable ID"))
+
+# move gene name to first column
+logCPM_named <- logCPM_named %>%
+  dplyr::select(`Gene name`, everything())
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#view n numbers by category and create kable tables 
+raw_counts_cleaned %>% 
+  count(age_sex) %>% 
+  arrange(age_sex) %>% 
+  rename(`Age-Sex Group` = age_sex, `Sample Count` = n) %>% 
+  kable("latex", booktabs = TRUE, caption = "Sample counts by Age-Sex") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+raw_counts_cleaned %>% 
+  count(race) %>% 
+  arrange(race) %>% 
+  rename(`Race` = race, `Sample Count` = n) %>% 
+  kable("latex", booktabs = TRUE, caption = "Sample counts by Race") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#remove rows from log_CPM_named when gene is NA and remove duplicates
+logCPM_named_clean <- logCPM_named %>%
+  filter(!is.na(`Gene name`) & `Gene name` != "") %>%
+  distinct(`Gene name`, .keep_all = TRUE) 
+
+#create a matrix of the expression data excluding gene info 
+mat <- logCPM_named_clean %>%
+  select(where(is.numeric)) %>%
+  as.matrix()
+
+#set each row in the matrix as its corresponding gene name 
+rownames(mat) <- logCPM_named_clean$`Gene name`
+
+#calculates gene variance 
+gene_var <- apply(mat, 1, var)
+
+#removes genes with minimal variance to reduce clutter in the plot
+mat_filtered <- mat[gene_var > 0, ]
+
+#selects the top 20 genes with the most variance to label in the plot
+top_n <- 20  # number of genes to show as arrows 
+
+top_genes <- names(sort(gene_var[gene_var > 0], decreasing = TRUE))[1:top_n]
+
+mat_top <- mat_filtered[top_genes, ]
+
+mat_t_top <- t(mat_top)
+
+#turn top genes into a data frame
+top_genes_df <- data.frame(
+  Gene = top_genes,
+  Variance = gene_var[top_genes]) %>%
+  arrange(desc(Variance))
+
+#transpose the matrix to have samples as rows and genes as columns for FactoMineR
+mat_t <- t(mat_filtered)  
+
+#perform principal component analysis 
+pca_res <- PCA(mat_t, graph = FALSE)
+
+#create sample coordinates and add them as columns PC1 and PC2
+pca_df <- data.frame(pca_res$ind$coord[,1:2])
+
+colnames(pca_df) <- c("PC1", "PC2")
+
+pca_df$Sample <- rownames(pca_df)
+
+#add sample info from raw_counts to the pca dataframe 
+pca_df <- pca_df %>%
+  left_join(raw_counts_cleaned, by = c("Sample" = "sample_id"))
+
+#calculate percent variance 
+var_explained <- round(pca_res$eig[1:2, "percentage of variance"], 1)
+
+# use anova to see if sex, age, or race influence PC1 or PC2 
+
+#sex alone
+#oneway.test(PC1 ~ sex, data = pca_df, var.equal = FALSE)
+#oneway.test(PC2 ~ sex, data = pca_df, var.equal = FALSE)
+
+#age alone
+#oneway.test(PC1 ~ age_decade, data = pca_df, var.equal = FALSE)
+#oneway.test(PC2 ~ age_decade, data = pca_df, var.equal = FALSE)
+
+#age and decade
+#oneway.test(PC1 ~ age_sex, data = pca_df, var.equal = FALSE)
+#oneway.test(PC2 ~ age_sex, data = pca_df, var.equal = FALSE)
+
+#race alone
+#oneway.test(PC1 ~ race, data = pca_df, var.equal = FALSE)
+#oneway.test(PC2 ~ race, data = pca_df, var.equal = FALSE)
+```
+
+```{r fig-pca-sexage, fig.cap = "Caption.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+#plot age_sex
+pca_age_sex <- fviz_pca_biplot(
+  pca_res,
+  geom.ind = "point",                # samples as points
+  habillage = pca_df$age_sex,           # color points by race
+  addEllipses = TRUE,                # ellipses for race groups
+  ellipse.level = 0.95,
+  repel = TRUE,                      # avoid overlapping arrows
+  geom.var = c("arrow", "text"),     # arrows + gene labels
+  select.var = list(name = top_genes),  # only top variable genes
+  col.var = "red",                    # arrows in red
+  alpha.var = 0.7) +                   # slightly transparent arrows
+labs(
+  x = paste0("PC1 (", var_explained[1], "%)"),
+  y = paste0("PC2 (", var_explained[2], "%)")) +
+theme_classic(base_size = 14) +
+theme(legend.position = "top")
+
+pca_age_sex
+```
+
+```{r fig-pca-race, fig.cap = "Caption.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+#plot race
+pca_race <- fviz_pca_biplot(
+  pca_res,
+  geom.ind = "point",                # samples as points
+  habillage = pca_df$race,           # color points by race
+  addEllipses = TRUE,                # ellipses for race groups
+  ellipse.level = 0.95,
+  repel = TRUE,                      # avoid overlapping arrows
+  geom.var = c("arrow", "text"),     # arrows + gene labels
+  select.var = list(name = top_genes),  # only top variable genes
+  col.var = "red",                    # arrows in red
+  alpha.var = 0.7) +               # slightly transparent arrows 
+labs(
+  x = paste0("PC1 (", var_explained[1], "%)"),
+  y = paste0("PC2 (", var_explained[2], "%)")) +
+theme_classic(base_size = 14) +
+theme(legend.position = "top")
+
+pca_race
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#create a list of pluripotency, differentiation, and housekeeping genes
+pluripotency_genes <- c("SOX2", "POU5F1", "KLF4", 
+                        "MYC","PODXL", "NANOG", 
+                        "FUT4", "LIN28A", "ALPL")
+
+differentiation_genes <- c("PAX6","NES","KRT14", 
+                           "SOX17", "AFP", "PDX1", 
+                           "CD34", "THY1", "NKX2-5")
+
+housekeeping_genes <- c("ACTB","GAPDH","RPL13A","HPRT1",
+                        "B2M","TBP","PGK1","UBC", "RPL36AL")
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#utilize a function to generate heatmap, lmm, and bar graph with ANOVA and Tukey HSD
+
+run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
+  
+  # Filter logCPM to the selected genes and pivot long
+  df <- logCPM_named %>%
+    dplyr::select(-`Gene stable ID`) %>%
+    filter(`Gene name` %in% gene_list) %>%
+    pivot_longer(-`Gene name`, names_to = "Sample", 
+                 values_to = "Expression") %>%
+    left_join(
+      raw_counts_cleaned %>% 
+        dplyr::select(sample_id, sex, age_decade, age_sex, race),
+      by = c("Sample" = "sample_id")) %>%
+    filter(!is.na(age_decade) & !is.na(sex) & !is.na(race))
+  
+  df$group_var <- df[[condition]]
+
+  #per gene ANOVA and Games_Howell
+  
+  # create empty dataframes to store results
+  gene_anova <- data.frame()
+  gene_Games_Howell <- data.frame()
+  
+#use a for loop to loop through each gene and perform an ANOVa and Games_Howell tests
+  for (g in unique(df$`Gene name`)) {
+    gdat <- df %>% filter(`Gene name` == g) %>%
+    filter(!is.na(Expression), !is.na(age_sex), !is.na(race))
+    
+    if(nrow(gdat) < 3) next
+    
+    # One-way ANOVA (Expression ~ sex_age)
+    fit <- oneway.test(Expression ~ group_var, 
+                       data = gdat, var.equal = FALSE)
+    
+    # Save ANOVA result
+    tidy_fit <- data.frame(
+      term = condition,
+      statistic = fit$statistic,
+      parameter = fit$parameter,
+      p.value = fit$p.value,
+      Gene = g)
+    gene_anova <- rbind(gene_anova, tidy_fit)
+    
+    # Games–Howell post-hoc
+    gh <- gdat %>%
+      rstatix::games_howell_test(Expression ~ group_var) %>%
+      dplyr::rename(p_value = p.adj) %>%
+      mutate(Gene = g,
+             comparison = paste(group1, "-", group2))
+    
+    gene_Games_Howell <- rbind(gene_Games_Howell, gh)
+  }
+
+  # FDR correction for ANOVA
+  anova_fdr <- gene_anova %>%
+    group_by(term) %>%
+    mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
+    ungroup()
+
+  # FDR correction for Games_Howell
+  Games_Howell_fdr <- gene_Games_Howell %>%
+    group_by(Gene) %>%
+    mutate(p_adj = p.adjust(p_value, method = "BH"))
+  
+  # Summaries for plotting
+  summary_df <- df %>%
+    group_by(`Gene name`, group_var) %>%
+    summarize(
+      mean_expr = mean(Expression),
+      SE_expr   = sd(Expression)/sqrt(n()),
+      .groups = "drop") %>%
+    rename(Gene = `Gene name`, `Sample name` = "group_var")
+  
+  summary_df <- summary_df %>%
+    mutate(`Sample name` = trimws(`Sample name`),
+         `Sample name` = factor(`Sample name`, 
+                                levels = unique(`Sample name`)))
+  
+  # Significant pairs
+  sig_pairs <- gene_Games_Howell%>%
+    filter(p_value < 0.05) %>%
+    mutate(
+      annotations = case_when(
+        p_value < 0.001 ~ "***",
+        p_value < 0.01  ~ "**",
+        TRUE ~ "*"),
+      group1 = sub("-.*", "", comparison),
+      group2 = sub(".*-", "", comparison)) %>%
+    dplyr::select(Gene, group1, group2, p_value, annotations)
+  
+  sig_pairs <- sig_pairs %>%
+  mutate(group1 = trimws(group1),
+         group2 = trimws(group2),
+         group1 = factor(group1, levels = levels(summary_df$`Sample name`)),
+         group2 = factor(group2, levels = levels(summary_df$`Sample name`)))
+  
+  if (nrow(sig_pairs) > 0) {
+    sig_pairs <- sig_pairs %>%
+      left_join(
+        summary_df %>%
+          group_by(Gene) %>%
+          summarize(
+          max_expr = max(mean_expr + SE_expr),
+          min_expr = min(mean_expr - SE_expr)),
+      by = "Gene") %>%
+    group_by(Gene) %>%
+    mutate(
+      y_position = ifelse(max_expr > 0,
+                          max_expr * (1 + 1.1 * row_number()),  
+                          min_expr * (1 - 1.1 * row_number()))) %>%
+    ungroup()
+  }
+  
+  # Bar graph
+  plot <- ggplot(summary_df, 
+                 aes(x = `Sample name`, 
+                     y = mean_expr, 
+                     fill = `Sample name`)) +
+    geom_col(position =position_dodge(width =0.9)) +
+    geom_errorbar(aes(ymin = mean_expr - SE_expr, 
+                      ymax = mean_expr + SE_expr),
+                      position = position_dodge(width =0.9), width =0.2) +
+    facet_wrap(~ Gene, scales = "free_y") +
+    scale_fill_d3("category20c") +
+    theme_bw() +
+    scale_y_continuous(expand =expansion(mult =c(0.02,0.2))) +
+    theme(axis.text.x = element_text(angle =45,hjust =1),
+          legend.position ="top",
+          panel.spacing =unit(1.2,"lines"),
+          panel.clip ="off",
+          axis.text.y =element_text(size =12),
+          axis.title.x =element_text(size =16),
+          axis.title.y =element_text(size =16),
+          strip.text =element_text(size =12,face ="bold")) +
+    labs(y ="Log2(Counts Per Million)", 
+         x ="Sample",
+         fill ="Sample:")
+  
+  if (nrow(sig_pairs) > 0) {
+    plot <- plot +
+      geom_signif(
+        data = sig_pairs,
+        aes(xmin = group1, xmax = group2, y_position = y_position,
+            annotations = annotations),
+        manual = TRUE,
+        inherit.aes = FALSE)
+  }
+
+  heatmap_mat <- df %>%
+  group_by(`Gene name`, group_var) %>%
+  summarize(Expression = mean(Expression, na.rm = TRUE),
+            .groups = "drop") %>%
+  pivot_wider(names_from = group_var, values_from = Expression) %>%
+  column_to_rownames("Gene name") %>%
+  as.matrix()
+
+heatmap_obj <- pheatmap::pheatmap(
+  heatmap_mat,
+  scale = "row",                 
+  cluster_rows = TRUE,           
+  cluster_cols = FALSE,          
+  show_rownames = TRUE,
+  show_colnames = TRUE,
+  fontsize_row = 10,
+  fontsize_col = 12,
+  cellwidth = 50,                
+  cellheight = 25,
+  silent = TRUE)
+
+  # Return everything
+  list(
+  data   = df,
+  anova       = gene_anova,
+  anova_fdr   = anova_fdr,
+  Games_Howell = gene_Games_Howell,
+  Games_Howell_fdr = Games_Howell_fdr,
+  plot        = plot,
+  heatmap = heatmap_obj)
+}
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#run_gene_analysis function for each group of genes and contition
+
+top20_agesex_results  <- run_gene_analysis(top_genes, "Top20", condition = "age_sex")
+top20_race_results  <- run_gene_analysis(top_genes, "Top20", condition = "race")
+
+pluri_agesex_results  <- run_gene_analysis(pluripotency_genes, "Pluripotency", condition = "age_sex")
+pluri_race_results  <- run_gene_analysis(pluripotency_genes, "Pluripotency", condition = "race")
+
+diff_agesex_results   <- run_gene_analysis(differentiation_genes, "Differentiation", condition = "age_sex")
+diff_race_results   <- run_gene_analysis(differentiation_genes, "Differentiation", condition = "race")
+
+housekeeping_agesex_results  <- run_gene_analysis(housekeeping_genes, "Housekeeping", condition = "age_sex")
+housekeeping_race_results  <- run_gene_analysis(housekeeping_genes, "Housekeeping", condition = "race")
+```
+
+```{r fig-heatmap-top20, fig.cap = "Expression of Genes with the Greatest Variability", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+top20_agesex_results$heatmap
+```
+
+```{r fig-heatmap-top20-race, fig.cap = "Expression of of Genes with the Greatest Variability", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+top20_race_results$heatmap
+```
+
+```{r fig-heatmap-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+pluri_agesex_results$heatmap
+```
+
+```{r fig-heatmap-pluripotency-race, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+pluri_race_results$heatmap
+```
+
+```{r fig-bargraph-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+pluri_agesex_results$plot
+```
+
+```{r fig-bargraph-pluripotency-race, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+pluri_race_results$plot
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#pluripotency genes, age sex stats 
+
+df_pluri_agesex <- pluri_agesex_results$data
+ # Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts,
+# since expression levels vary by gene
+lmm_pluri_agesex <- lmer(Expression ~ age_sex + (1 | `Gene name`), data = df_pluri_agesex)
+summary_pluri_agesex <- summary(lmm_pluri_agesex)
+  # type III ANOVA to test significance of fixed effects on expression
+lmm_pluri_agesex_anova <- anova(lmm_pluri_agesex, type = 3)
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+lmm_pluri_agesex_emm <- emmeans(lmm_pluri_agesex, pairwise ~ age_sex)
+
+#lmm summary
+summary_pluri_agesex
+#anova
+lmm_pluri_agesex_anova
+#means 
+lmm_pluri_agesex_emm
+#gene anova FDR corrected 
+pluri_agesex_results$anova_fdr
+#gene tueky corrected
+pluri_agesex_results$Games_Howell_fdr
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#pluripotency genes, race stats 
+
+df_pluri_race <- pluri_race_results$data
+ # Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts,
+# since expression levels vary by gene
+lmm_pluri_race <- lmer(Expression ~ race + (1 | `Gene name`), data = df_pluri_race)
+summary_pluri_race <- summary(lmm_pluri_race)
+  # type III ANOVA to test significance of fixed effects on expression
+lmm_pluri_race_anova <- anova(lmm_pluri_race, type = 3)
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+lmm_pluri_race_emm <- emmeans(lmm_pluri_race, pairwise ~ race)
+
+#lmm summary
+summary_pluri_race
+#anova
+lmm_pluri_race_anova
+#means 
+lmm_pluri_race_emm
+#gene anova FDR corrected 
+pluri_race_results$anova_fdr
+#gene tueky corrected
+pluri_race_results$Games_Howell_fdr
+```
+
+```{r fig-heatmap-diff, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+diff_agesex_results$heatmap
+```
+
+```{r fig-heatmap-diff-race, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+diff_race_results$heatmap
+```
+
+```{r fig-bargraph-diff, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+diff_agesex_results$plot
+```
+
+```{r fig-bargraph-diff-race, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+diff_race_results$plot
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#diff genes, age sex stats 
+
+df_diff_agesex <- diff_agesex_results$data
+ # Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts,
+# since expression levels vary by gene
+lmm_diff_agesex <- lmer(Expression ~ age_sex + (1 | `Gene name`), data = df_diff_agesex)
+summary_diff_agesex <- summary(lmm_diff_agesex)
+  # type III ANOVA to test significance of fixed effects on expression
+lmm_diff_agesex_anova <- anova(lmm_diff_agesex, type = 3)
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+lmm_diff_agesex_emm <- emmeans(lmm_diff_agesex, pairwise ~ age_sex)
+
+#lmm summary
+summary_diff_agesex
+#anova
+lmm_diff_agesex_anova
+#means 
+lmm_diff_agesex_emm
+#gene anova FDR corrected 
+diff_agesex_results$anova_fdr
+#gene tueky corrected
+diff_agesex_results$Games_Howell_fdr
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#diff genes, race stats 
+
+df_diff_race <- diff_race_results$data
+ # Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts,
+# since expression levels vary by gene
+lmm_diff_race <- lmer(Expression ~ race + (1 | `Gene name`), data = df_diff_race)
+summary_diff_race <- summary(lmm_diff_race)
+  # type III ANOVA to test significance of fixed effects on expression
+lmm_diff_race_anova <- anova(lmm_diff_race, type = 3)
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+lmm_diff_race_emm <- emmeans(lmm_diff_race, pairwise ~ race)
+
+#lmm summary
+summary_diff_race
+#anova
+lmm_diff_race_anova
+#means 
+lmm_diff_race_emm
+```
+
+```{r fig-heatmap-hk, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+housekeeping_agesex_results$heatmap
+```
+
+```{r fig-heatmap-hk-race, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+housekeeping_race_results$heatmap
+```
+
+```{r fig-bargraph-hk, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+housekeeping_agesex_results$plot
+```
+
+```{r fig-bargraph-hk-race, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+housekeeping_race_results$plot
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#hk genes, age sex stats 
+
+df_housekeeping_agesex <- housekeeping_agesex_results$data
+ # Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts,
+# since expression levels vary by gene
+lmm_housekeeping_agesex <- lmer(Expression ~ age_sex + (1 | `Gene name`), data = df_housekeeping_agesex)
+summary_housekeeping_agesex <- summary(lmm_housekeeping_agesex)
+  # type III ANOVA to test significance of fixed effects on expression
+lmm_housekeeping_agesex_anova <- anova(lmm_housekeeping_agesex, type = 3)
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+lmm_housekeeping_agesex_emm <- emmeans(lmm_housekeeping_agesex, pairwise ~ age_sex)
+
+#lmm summary
+summary_housekeeping_agesex
+#anova
+lmm_housekeeping_agesex_anova
+#means 
+lmm_housekeeping_agesex_emm
+#gene anova FDR corrected 
+housekeeping_agesex_results$anova_fdr
+#gene tueky corrected
+housekeeping_agesex_results$Games_Howell_fdr
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#diff genes, race stats 
+
+df_housekeeping_race <- housekeeping_race_results$data
+ # Fit mixed model
+#model the response variable, Expression, for the fixed effects, age and sex
+# genes are treated as a random effect, all with different y intercepts,
+# since expression levels vary by gene
+lmm_housekeeping_race <- lmer(Expression ~ race + (1 | `Gene name`), data = df_housekeeping_race)
+summary_housekeeping_race <- summary(lmm_housekeeping_race)
+  # type III ANOVA to test significance of fixed effects on expression
+lmm_housekeeping_race_anova <- anova(lmm_housekeeping_race, type = 3)
+
+# estimated marginal means (or least-squares means) with pairwise comparisons
+lmm_housekeeping_race_emm <- emmeans(lmm_housekeeping_race, pairwise ~ race)
+
+#lmm summary
+summary_housekeeping_race
+#anova
+lmm_housekeeping_race_anova
+#means 
+lmm_housekeeping_race_emm
+#gene anova FDR corrected 
+housekeeping_race_results$anova_fdr
+#gene tueky corrected
+housekeeping_race_results$Games_Howell_fdr
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+plot_lmm_residuals <- function(lmm, data, fixed_effect, extreme_sd = 2) {
+  
+  # Extract residuals
+  residuals_df <- data %>%
+    mutate(
+      Residual = resid(lmm, type = "pearson"),
+      Residual_SD = Residual / sd(Residual),
+      Extreme = abs(Residual_SD) > extreme_sd)
+  
+  # Histogram of residuals
+  p_hist <- ggplot(residuals_df, aes(x = Residual, fill = Extreme)) +
+    geom_histogram(binwidth = 0.2, color = "black") +
+    scale_fill_manual(values = c("grey80", "red")) +
+    theme_bw() +
+    labs(title = paste("Residuals from LMM:", fixed_effect),
+         x = "Residual", y = "Count")
+  
+  # QQ plot of residuals
+  p_qq <- ggplot(residuals_df, aes(sample = Residual)) +
+    stat_qq(aes(color = Extreme)) +
+    stat_qq_line() +
+    scale_color_manual(values = c("black", "red")) +
+    theme_bw() +
+    labs(title = paste("QQ plot of LMM residuals:", fixed_effect),
+         color = "Extreme Residual")
+  
+  # List extreme residuals
+  extreme_residuals <- residuals_df %>%
+    filter(Extreme) %>%
+    select(`Gene name`, Sample, Residual) %>%
+    arrange(desc(abs(Residual)))
+  
+  # Automatically display plots
+  print(p_hist)
+  print(p_qq)
+    # Display extreme residuals dataframe
+  print(extreme_residuals)
+  
+  #return data invisibly
+  invisible(list(
+    residuals_df = residuals_df,
+    extreme_residuals = extreme_residuals))
+}
+
+#pluripotency genes
+residuals_pluri_age_sex <- plot_lmm_residuals(
+  lmm = lmm_pluri_agesex,
+  data = df_pluri_agesex,
+  fixed_effect = "age_sex",
+  extreme_sd = 2)
+
+residuals_pluri_race <- plot_lmm_residuals(
+  lmm = lmm_pluri_race,
+  data = df_pluri_race,
+  fixed_effect = "race",
+  extreme_sd = 2)
+
+#differentiation genes
+residuals_diff_age_sex <- plot_lmm_residuals(
+  lmm = lmm_diff_agesex,
+  data = df_diff_agesex,
+  fixed_effect = "age_sex",
+  extreme_sd = 2)
+
+residuals_diff_race <- plot_lmm_residuals(
+  lmm = lmm_diff_race,
+  data = df_diff_race,
+  fixed_effect = "race",
+  extreme_sd = 2)
+
+#housekeeping genes
+residuals_housekeeping_age_sex <- plot_lmm_residuals(
+  lmm = lmm_housekeeping_agesex,
+  data = df_housekeeping_agesex,
+  fixed_effect = "age_sex",
+  extreme_sd = 2)
+
+residuals_housekeeping_race <- plot_lmm_residuals(
+  lmm = lmm_housekeeping_race,
+  data = df_housekeeping_race,
+  fixed_effect = "race",
+  extreme_sd = 2)
+```
+
+# Discussion
+
+### pie charts
+
+The RNA Seq data is composed of a variety of different types of RNA, as
+seen in Figure 1. 34.8% of read genes are mRNA protein coding genes,
+whereas the remaining 65.2% of the detected genes are not protein coding
+and are primary composed of noncoding RNAs and pseudogenes, which are
+RNA sequences that look like protein coding genes but are not able to be
+translated into a protein. 25.6% of the detected genes were
+pseuodegenes. 25.5% were long non coding RNA sequences and 8.5% were
+small RNAs, which included snoRNA, snRNA, scaRNA, sRNA, and ribozyme
+RNA. 5.7% were "Other" RNAs, which include ribosoal RNA, immunoglobin
+genes, T-cell receptor genes, and mitocondrial RNAs. The right pie
+chart, on the other hand, displays the expression of these groups. For
+each gene for each sample, a count per million number was provided by
+Carcamo-Orive *et al.*. This is typically calculated by dividing the raw
+count of the gene by the total reads in the sample and multiplying by
+one million. The total expression was summed for each category, and this
+was graphed in Figure 2, which displays that 91.7% of the expression is
+from protein coding genes. The remaining 8.3% accounts for the
+expression of small RNAs, long non coding RNA, pseuodgenes, and "Other"
+genes. This is supported by \_\_\_ data from \_\_\_ article, which saw
+\_\_\_\_.
+
+### pca
+
+welch's anova (one way analysis of means (not assuming equal variance)
+
+PC1 and sex (p = 0.3892) PCA2 ( p = 0.6077)
+
+PCA1 and age_Decade (p = 0.09443) and PCA2 (p = 0.2645)
+
+PCA1 and age_sex (p = 0.1993) and PCA2 (p \< 0.001)
+
+PCA1 and race (p \< 0.001) and PCA2 (p \< 0.001)
+
+### top 20 genes:
+
+sex linked RPS4Y1 Ribosomal protein S4, Y-linked. Present only in males.
+High variance indicates sex is a strong driver. XIST X-inactive specific
+transcript. Expressed in females for X-chromosome inactivation.
+Sex-linked. DDX3Y DEAD-box helicase, Y-linked. Male-specific. TSIX
+Antisense of XIST, regulates X-chromosome inactivation. Female-specific.
+TXLNGY Y-linked, involved in transcription/translation regulation. KDM5D
+Lysine demethylase 5D, Y-linked. Male-specific. USP9Y Ubiquitin-specific
+peptidase 9, Y-linked. Male-specific. EIF1AY Eukaryotic translation
+initiation factor 1A, Y-linked. Male-specific. UTY Ubiquitously
+transcribed tetratricopeptide repeat, Y-linked. Male-specific. NLGN4Y
+Neuroligin 4, Y-linked. Male-specific. RPS4XP22 Pseudogene similar to
+RPS4X/RPS4Y.
+
+other genes CST1 Cystatin SN, extracellular protease inhibitor. May vary
+in differentiation. CER1 Cerberus, secreted factor involved in early
+development and differentiation. LARGE1 Glycosyltransferase, involved in
+post-translational modification. NLRP2 NLR family pyrin domain
+containing 2, involved in early development, oocyte/embryo regulation.
+COL3A1 Collagen type III alpha 1, ECM protein, differentiation-related.
+ZNF208 Zinc finger protein, transcription factor, potential regulatory
+role. APOA1 Apolipoprotein A1, lipid transport, may reflect metabolic
+differences. MEG3 Long non-coding RNA, tumor suppressor, epigenetic
+regulation, differentiation-related. LINC00261 Long non-coding RNA,
+involved in endoderm differentiation.
+
+### pluripotency
+
+Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
+TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A,alp
+
+linear mixed model Expression \~ age_sex + 1\|`Gene name`
+
+“We fit linear mixed-effects models of the form\
+
+**Expression \~ age_sex + (1 \| Gene)**\
+
+using lme4/lmerTest, with Satterthwaite-adjusted p-values.”
+
+data: pluripotency genes
+
+each gene has its own intercept, age_sex is a fixed effect
+
+Residual variance = 0.189 and gene intercept variance = 9.82 means most
+of the variation is between genes, not sex and age. the genes differ a
+lot. residual noise is small, model fits wells
+
+Fixed effects
+
+70s female, lower pluripotency expression, - 0.097, p \< 0.05. 6.5%
+decrease
+
+70s male, higher pluripotency expression, +0.179, p \< 0.001 13%
+increase
+
+no difference between other groups and the reference group (40s female)
+
+Type III Analysis of Variance Table with Satterthwaite's method -
+confirms age_sex have a significant effect on pluripotency gene
+expression when averaged across all genes. p \< 0.001.
+
+FUT4 showed 11 significant pairwise comparisons across age-sex groups
+after FDR correction (Games-Howell test), LIN28A showed 9, and NANOG,
+POU5F1, and SOX2 with 5 signficant pairwiese comparisons.
+
+KLF4 and ALPL showed the fewest significant differences, with only one
+pairwise comparison reaching significance.
+
+all gene has significant pairwise comparisons
+
+linear mixed model Expression \~ race + 1\|`Gene name`
+
+Residual variance = 0.1901 and gene intercept variance = 9.82 means most
+of the variation is between genes, not race. the genes differ a lot.
+residual noise is small, model fits wells
+
+South Asian 2\^(-0.143) = 0.9 = 10% decrease in expression. (p \< 0.01)
+
+After adjusting for gene-level random effects, South Asian individuals
+show significantly lower mean log₂ gene expression (β = –0.143, p =
+0.0059).\
+
+This corresponds to approximately a 10% decrease in pluripotency gene
+expression relative to the reference race group.
+
+ALPL and LIN28A showed 5 significant pairwise comparisons, and SOX2 with
+four.
+
+Several pluripotency genes, including FUT4, NANOG, PODXL, and POU5F1,
+did not show any significant pairwise differences across age-sex groups,
+indicating relatively stable expression.
+
+### Differentiation Markers
+
+Expression of Differentiation Genes (ectoderm: PAX6, NESTIN (NES)
+(neural projenitor/stem cell markers), KRT14 (epithelial), endoderm:
+SOX17, AFP (hepatic), PDX1 (pancreatic), mesoderm: CD34 (hematopoitic),
+CD90 (THY1)(mesenchymal), NKX2.5 (cardiac progenitor)).
+
+age_sex
+
+random effects:
+
+Gene-level intercept variance = 13.168 (SD = 3.629), showing substantial
+variation between genes.
+
+Residual variance = 1.195 (SD = 1.093), within-gene variation.
+
+fixed effects
+
+50s female, -0.269, p \< 0.001 17% decrease
+
+50s male -0.398, p\< 0.001 24.5% decrease
+
+60s female -0.500, p \< 0.001 29.3% decrease
+
+Compared with 40s female samples, differentiation gene expression was
+17% lower in 50s female, 24.5% lower in 50s male, and 29.3% lower in 60s
+female samples (p \< 0.001 for all). No significant differences were
+observed for 40s male, 60s male, 70s female, or 70s male.”
+
+race
+
+Intercept 13.169 Residual1.163
+
+Asian, -0.42975, 25.3% decrease p \< 0.001
+
+Hispanic, + 0.39902, 32.0% increase, p \< 0.01
+
+South Asian, + 0.85435, 80.0% increase, p \< 0.001
+
+### Housekeeping Genes
+
+Figure 5. Expression of Housekeeping Genes (some sort of general figure
+or sorted by housekeeping type (i.e. ribosomal, metabolic, cytoskeleton,
+etc.))
+
+age_sex
+
+Intercept 7.163 Residual 0.150
+
+40s male, + 0.1325, 9.6% increase, p \< 0.001
+
+50s female, + 0.03375, 2.4% increase, p \< 0.01
+
+60s female, + 0.08191, 5.7% increase, p \< 0.01
+
+race
+
+Intercept 7.1635 Residual 0.1507
+
+Hispanic, + 0.09717, 7.1% increase, p \< 0.05
+
+# Conclusion
+
+------------------------------------------------------------------------
+
+# References

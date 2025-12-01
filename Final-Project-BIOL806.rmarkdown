@@ -135,6 +135,8 @@ library(patchwork)
 library(FactoMineR)
 library(grid) 
 library(factoextra)
+library(rstatix)
+library(kableExtra)
 
 #import data files
 raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
@@ -464,6 +466,23 @@ anova(lm(PC1 ~ race, data = pca_df))
 anova(lm(PC2 ~ race, data = pca_df))
 ```
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#view n numbers by category 
+table_age_sex <- raw_counts_cleaned %>%
+  count(age_sex) %>%
+  arrange(age_sex) %>%
+  rename(`Age-Sex Group` = age_sex, `Sample Count` = n) %>%
+  kable("latex", booktabs = TRUE, caption = "Sample counts by Age-Sex") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+table_race <- raw_counts_cleaned %>%
+  count(race) %>%
+  arrange(race) %>%
+  rename(`Race` = race, `Sample Count` = n) %>%
+  kable("latex", booktabs = TRUE, caption = "Sample counts by Race") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+```
+
 
 ```{r fig-pca-sexage, fig.cap = "Caption.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 #plot age_sex
@@ -537,13 +556,13 @@ LINC00261	Long non-coding RNA, involved in endoderm differentiation.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #create a list of pluripotency, differentiation, and housekeeping genes
-pluripotency_genes <- c("SOX2", "POU5F1", "KLF4", "MYC",
-                        "PODXL", "NANOG", "FUT4", "LIN28A", 
-                        "LIN28B", "ESRRB", "PRDM14", "TFCP2L1")
+pluripotency_genes <- c("SOX2", "POU5F1", "KLF4", 
+                        "MYC","PODXL", "NANOG", 
+                        "FUT4", "LIN28A", "ALPL")
 
-differentiation_genes <- c("SOX1","PAX6","NES","KRT14", 
-                           "SOX17", "AFP", "PDX1", "CD34", 
-                           "THY1", "NKX2-5")
+differentiation_genes <- c("PAX6","NES","KRT14", 
+                           "SOX17", "AFP", "PDX1", 
+                           "CD34", "THY1", "NKX2-5")
 
 housekeeping_genes <- c("ACTB","GAPDH","RPL13A","HPRT1",
                         "B2M","TBP","PGK1","UBC", "RPL36AL")
@@ -568,13 +587,13 @@ run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
   
   df$group_var <- df[[condition]]
 
-  #per gene ANOVA and Tukey
+  #per gene ANOVA and Games_Howell
   
   # create empty dataframes to store results
   gene_anova <- data.frame()
-  gene_tukey <- data.frame()
+  gene_Games_Howell <- data.frame()
   
-#use a for loop to loop through each gene and perform an ANOVa and tukey tests
+#use a for loop to loop through each gene and perform an ANOVa and Games_Howell tests
   for (g in unique(df$`Gene name`)) {
     gdat <- df %>% filter(`Gene name` == g) %>%
     filter(!is.na(Expression), !is.na(age_sex), !is.na(race))
@@ -582,19 +601,26 @@ run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
     if(nrow(gdat) < 3) next
     
     # One-way ANOVA (Expression ~ sex_age)
-    fit <- aov(Expression ~ group_var, data = gdat)
+    fit <- oneway.test(Expression ~ group_var, 
+                       data = gdat, var.equal = FALSE)
     
-    # Save tidy ANOVA table
-    tidy_fit <- broom::tidy(fit)
-    if(nrow(tidy_fit) > 0) gene_anova <- rbind(gene_anova, tidy_fit %>%
-                                                 mutate(Gene = g))
+    # Save ANOVA result
+    tidy_fit <- data.frame(
+      term = condition,
+      statistic = fit$statistic,
+      parameter = fit$parameter,
+      p.value = fit$p.value,
+      Gene = g)
+    gene_anova <- rbind(gene_anova, tidy_fit)
     
-    # Tukey HSD post-hoc for age_sex
-    tk <- TukeyHSD(fit, "group_var")
-    tkdf <- as.data.frame(tk$group_var) %>%
-      rename(p_value = `p adj`) %>%
-      mutate(Gene = g, comparison = rownames(.))
-    gene_tukey <- rbind(gene_tukey, tkdf)
+    # Games–Howell post-hoc
+    gh <- gdat %>%
+      rstatix::games_howell_test(Expression ~ group_var) %>%
+      dplyr::rename(p_value = p.adj) %>%
+      mutate(Gene = g,
+             comparison = paste(group1, "-", group2))
+    
+    gene_Games_Howell <- rbind(gene_Games_Howell, gh)
   }
 
   # FDR correction for ANOVA
@@ -603,8 +629,8 @@ run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
     mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
     ungroup()
 
-  # FDR correction for Tukey HSD
-  tukey_fdr <- gene_tukey %>%
+  # FDR correction for Games_Howell
+  Games_Howell_fdr <- gene_Games_Howell %>%
     group_by(Gene) %>%
     mutate(p_adj = p.adjust(p_value, method = "BH"))
   
@@ -617,8 +643,13 @@ run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
       .groups = "drop") %>%
     rename(Gene = `Gene name`, `Sample name` = "group_var")
   
+  summary_df <- summary_df %>%
+    mutate(`Sample name` = trimws(`Sample name`),
+         `Sample name` = factor(`Sample name`, 
+                                levels = unique(`Sample name`)))
+  
   # Significant pairs
-  sig_pairs <- gene_tukey %>%
+  sig_pairs <- gene_Games_Howell%>%
     filter(p_value < 0.05) %>%
     mutate(
       annotations = case_when(
@@ -629,16 +660,27 @@ run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
       group2 = sub(".*-", "", comparison)) %>%
     dplyr::select(Gene, group1, group2, p_value, annotations)
   
+  sig_pairs <- sig_pairs %>%
+  mutate(group1 = trimws(group1),
+         group2 = trimws(group2),
+         group1 = factor(group1, levels = levels(summary_df$`Sample name`)),
+         group2 = factor(group2, levels = levels(summary_df$`Sample name`)))
+  
   if (nrow(sig_pairs) > 0) {
     sig_pairs <- sig_pairs %>%
       left_join(
         summary_df %>%
           group_by(Gene) %>%
-          summarize(max_bar = max(mean_expr + SE_expr)),
-        by = "Gene") %>%
-      group_by(Gene) %>%
-      mutate(y_position = max_bar * (1 + 1.2 * row_number())) %>%
-      ungroup()
+          summarize(
+          max_expr = max(mean_expr + SE_expr),
+          min_expr = min(mean_expr - SE_expr)),
+      by = "Gene") %>%
+    group_by(Gene) %>%
+    mutate(
+      y_position = ifelse(max_expr > 0,
+                          max_expr * (1 + 1.1 * row_number()),  
+                          min_expr * (1 - 1.1 * row_number()))) %>%
+    ungroup()
   }
   
   # Bar graph
@@ -702,8 +744,8 @@ heatmap_obj <- pheatmap::pheatmap(
   data   = df,
   anova       = gene_anova,
   anova_fdr   = anova_fdr,
-  tukey       = gene_tukey,
-  tukey_fdr   = tukey_fdr,
+  Games_Howell = gene_Games_Howell,
+  Games_Howell_fdr = Games_Howell_fdr,
   plot        = plot,
   heatmap = heatmap_obj)
 }
@@ -711,6 +753,9 @@ heatmap_obj <- pheatmap::pheatmap(
 
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
+top20_agesex_results  <- run_gene_analysis(top_genes, "Top20", condition = "age_sex")
+top20_race_results  <- run_gene_analysis(top_genes, "Top20", condition = "race")
+
 pluri_agesex_results  <- run_gene_analysis(pluripotency_genes, "Pluripotency", condition = "age_sex")
 pluri_race_results  <- run_gene_analysis(pluripotency_genes, "Pluripotency", condition = "race")
 
@@ -721,11 +766,19 @@ housekeeping_agesex_results  <- run_gene_analysis(housekeeping_genes, "Housekeep
 housekeeping_race_results  <- run_gene_analysis(housekeeping_genes, "Housekeeping", condition = "race")
 ```
 
+### Top 20 Genes
+```{r fig-heatmap-top20, fig.cap = "Expression of Genes with the Greatest Variability", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+top20_agesex_results$heatmap
+```
+```{r fig-heatmap-top20-race, fig.cap = "Expression of of Genes with the Greatest Variability", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+top20_race_results$heatmap
+```
+
 ### Pluripotency Markers
 
 Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
-TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A, LIN28B, ESRRB,
-PRDM14, ZRP42 (REX1), TFCP2L1.
+TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A,alp
+
 
 ```{r fig-heatmap-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=6, echo=FALSE, warning=FALSE, message=FALSE}
 pluri_agesex_results$heatmap
@@ -827,7 +880,7 @@ pluri_race_results$tukey_fdr
 ```
 ### Differentiation Markers
 
-Expression of Differentiation Genes (ectoderm: PAX6, NESTIN (NES) or SOX1
+Expression of Differentiation Genes (ectoderm: PAX6, NESTIN (NES)
 (neural projenitor/stem cell markers), KRT14 (epithelial), endoderm:
 SOX17, AFP (hepatic), PDX1 (pancreatic), mesoderm: CD34 (hematopoitic),
 CD90 (THY1)(mesenchymal), NKX2.5 (cardiac progenitor)).
@@ -846,7 +899,6 @@ diff_agesex_results$plot
 diff_race_results$plot
 ```
 
-*need to fix significance bars + asterisks when values are negative*
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 #diff genes, age sex stats 
 
@@ -935,3 +987,4 @@ housekeeping_agesex_results$tukey_fdr
 ------------------------------------------------------------------------
 
 # References
+
