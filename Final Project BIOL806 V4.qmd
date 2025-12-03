@@ -16,6 +16,8 @@ bibliography:
 csl: norsk-apa-manual.csl
 ---
 
+# Abstract
+
 # Introduction
 
 The discovery of human induced pluripotent stem cells (iPSCs) by
@@ -88,7 +90,7 @@ housekeeping genes.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 #create list of packages to cite
-packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales", "pheatmap", "lme4", "lmerTest", "emmeans", "broom", "ggsignif", "ggsci", "patchwork", "FactoMineR", "grid", "factoextra", "rstatix", "kableExtra")
+packages <- c("base", "tidyverse", "dplyr", "ggplot2", "scales", "pheatmap", "lme4", "lmerTest", "emmeans", "broom", "ggsignif", "ggsci", "patchwork", "FactoMineR", "grid", "factoextra", "rstatix", "kableExtra", "lattice", "knitr", "gridExtra")
 
 #citing R and packages
 knitr::write_bib(packages, "packages.bib")
@@ -96,26 +98,81 @@ knitr::write_bib(packages, "packages.bib")
 
 ### Data Cleaning
 
-RNA-Seq counts per million data was acquired from Stemformatics using
-the Carcamo-Orive (2017) dataset [@carcamo-orive2017]. Genes in this
-study were referred to by their Ensembl ID, so gene information, such as
-name and RNA type, was integrated from the Emsembl database.
+RNA-Seq counts per million data (named: cpm_data), and sample metadata
+(named: raw_counts) were acquired from Stemformatics using the
+Carcamo-Orive (2017) dataset [@carcamo-orive2017]. Genes in this study
+were referred to by their Ensembl ID, so gene information, such as name
+and RNA type, was integrated from the Ensembl database. Using R
+[@R-base], the raw count per million data was converted to a log base 2
+scale with a 0.5 offset to prevent samples with a count of 0 from
+becoming skewed. Values for age, from the metadata file, were grouped by
+decade, and an additional column was added for an age + sex category
+(i.e., 40s female). Information from the sample description was then
+extracted to create columns for race and insulin resistance. The
+metadata and log₂ counts per million files were then merged into one
+data frame for further analysis.
 
-*further cleaning of the count per million data will be added*
+### Category Tables
 
-### Figure 1
+The number of samples for each group within the age-sex and race
+categories were summarized and displayed as two tables using the knitr
+[@R-knitr] and kableExtra [@R-kableExtra] packages.
+
+### Pie Charts by RNA Category
 
 Genes detected in the RNA Seq counts per million data were grouped into
-the following catagories: Protein coding, long non coding RNA (lncRNA),
+the following categories: Protein coding, long non-coding RNA (lncRNA),
 Small RNAs, Pseudogenes, and Other. A count of the number of genes in
 each category was then performed by using the dplyr package [@R-dplyr]
-from tidyverse [@R-tidyverse]. A fraction and percentage were then
-calculated by dividing the count by the sum of count (i.e. total count
-for all categories). The scales [@R-scales] package from ggplot2
-[@R-ggplot2] was used to create a pie chart of the counts by RNA
-category.
+from tidyverse [@R-tidyverse]. The total expression of each category was
+also calculated using the raw count per million data. The scales
+[@R-scales] package from ggplot2 [@R-ggplot2] was used to create two pie
+charts, one of the gene counts and one of the gene expression by RNA
+category, plotted together using the patchwork package [@R-patchwork].
 
-*continue methods for following figures ...*
+### Principal Component Analysis (PCA) Plots
+
+Log₂ expression values were first cleaned by removing entries without
+gene information and duplicate gene names. Gene variances were
+calculated across the samples, and genes with no variance were removed.
+To visualize the major sources of variation in the expression data, a
+principal component analysis (PCA) was performed using the FactoMineR
+package [@R-FactoMineR], which identifies the major axes of variation in
+the dataset. To assess if sample characteristics (sex, age decade,
+combined age sex groups, and race) influenced the PCA’s structure, a
+Welch’s one-way ANOVA, which does not assume equal variance, was
+performed separately for PCA1 and PCA2. Significant differences were
+found for the age sex groups and race categories, so two PCA biplots
+were generated, each overlaying confidence ellipses corresponding to
+either age sex groups or race. On both of the biplots, the top twenty
+genes with the highest variance across all samples were labeled and
+displayed as vectors.
+
+### Pluripotency, Differentiation, and Housekeeping Gene Expression
+
+The log₂ expression of genes, categorized as pluripotency markers,
+differentiation markers, and housekeeping genes, was compared across
+sample groups (age-sex and race) using heatmaps, linear mixed-effects
+models, and Welch’s ANOVA with post hoc Games-Howell tests. Heatmaps of
+log₂ gene expression were generated using the pheatmap package
+[@R-pheatmap] to visualize overall expression patterns within each gene
+category. Linear mixed-effect models were then fit using lme4 [@R-lme4]
+and lmerTest [@R-lmerTest] to evaluate differences in gene expression
+across age-sex and race groups, while accounting for gene-specific
+baseline expression levels by using random intercepts for genes. Percent
+differences in overall gene expression were calculated by exponentiating
+the estimated log₂ scale coefficient back to fold change, subtracting
+one, and multiplying by 100. QQ plots and histograms were generated, but
+not shown here, for each model to view residuals and assess model
+assumptions. To identify which genes displayed statistically significant
+differences in expression between sample categories, Welch’s one-way
+ANOVA, assuming unequal variance, was performed for each gene. P values
+were adjusted using the Benjamini-Hochberg method due to the high number
+of tests that were performed. For genes with significant ANOVA results,
+Games-Howell post hoc tests, using rstatix [@R-statix], were performed
+and p-values were Benjamini-Hochberg corrected. Significant Games Howell
+comparisons (adjusted p \< 0.05) were annotated on bar plots displaying
+log₂ expression for each gene across sample groups.
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #library packages
@@ -134,10 +191,12 @@ library(ggsci)
 library(patchwork)
 library(FactoMineR)
 library(grid) 
+library(gridExtra)
 library(factoextra)
 library(rstatix)
 library(kableExtra)
 library(lattice)
+library(knitr)
 
 #import data files
 raw_counts <- read_tsv("stemformatics_dataset_7274.samples.tsv")
@@ -230,8 +289,6 @@ cpm_category_summary <- cpm_long %>%
     label_pos = cumsum(fraction) - fraction / 2,
     large_slice = fraction > 0.1) 
 ```
-
-# Results
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 
@@ -332,10 +389,6 @@ plot_RNA_expression_final <- plot_expression +
   theme(plot.caption = element_text(size = 12, hjust = 0.5, face = "bold"))
 ```
 
-```{r fig-rna-pie-chart, fig.cap = "Detected RNA Types in iPSC Sample Analzyed using RNA Seq. The number of genes detected in each RNA category from RNA-seq data were counted and plotted as a pie chart (left). Small categories (< 2 %), such as rRNA, tRNA, and immunoglobulin genes, were combined into an 'Other' category. The expression of genes, using raw count per million data, was averaged by type of RNA and plotted as a pie chart (right).", fig.width=10, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-plot_RNA_types_final + plot_RNA_expression_final 
-```
-
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
 #begin cleaning data 
 
@@ -408,24 +461,7 @@ logCPM_named <- logCPM_named %>%
   dplyr::select(`Gene name`, everything())
 ```
 
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
-#view n numbers by category and create kable tables 
-raw_counts_cleaned %>% 
-  count(age_sex) %>% 
-  arrange(age_sex) %>% 
-  rename(`Age-Sex Group` = age_sex, `Sample Count` = n) %>% 
-  kable("latex", booktabs = TRUE, caption = "Sample counts by Age-Sex") %>% 
-  kable_styling(latex_options = c("striped", "hold_position"))
-
-raw_counts_cleaned %>% 
-  count(race) %>% 
-  arrange(race) %>% 
-  rename(`Race` = race, `Sample Count` = n) %>% 
-  kable("latex", booktabs = TRUE, caption = "Sample counts by Race") %>%
-  kable_styling(latex_options = c("striped", "hold_position"))
-```
-
-```{r, echo=FALSE, warning=FALSE, message=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
 #remove rows from log_CPM_named when gene is NA and remove duplicates
 logCPM_named_clean <- logCPM_named %>%
   filter(!is.na(`Gene name`) & `Gene name` != "") %>%
@@ -483,64 +519,20 @@ var_explained <- round(pca_res$eig[1:2, "percentage of variance"], 1)
 # use anova to see if sex, age, or race influence PC1 or PC2 
 
 #sex alone
-#oneway.test(PC1 ~ sex, data = pca_df, var.equal = FALSE)
-#oneway.test(PC2 ~ sex, data = pca_df, var.equal = FALSE)
+oneway.test(PC1 ~ sex, data = pca_df, var.equal = FALSE)
+oneway.test(PC2 ~ sex, data = pca_df, var.equal = FALSE)
 
 #age alone
-#oneway.test(PC1 ~ age_decade, data = pca_df, var.equal = FALSE)
-#oneway.test(PC2 ~ age_decade, data = pca_df, var.equal = FALSE)
+oneway.test(PC1 ~ age_decade, data = pca_df, var.equal = FALSE)
+oneway.test(PC2 ~ age_decade, data = pca_df, var.equal = FALSE)
 
 #age and decade
-#oneway.test(PC1 ~ age_sex, data = pca_df, var.equal = FALSE)
-#oneway.test(PC2 ~ age_sex, data = pca_df, var.equal = FALSE)
+oneway.test(PC1 ~ age_sex, data = pca_df, var.equal = FALSE)
+oneway.test(PC2 ~ age_sex, data = pca_df, var.equal = FALSE)
 
 #race alone
-#oneway.test(PC1 ~ race, data = pca_df, var.equal = FALSE)
-#oneway.test(PC2 ~ race, data = pca_df, var.equal = FALSE)
-```
-
-```{r fig-pca-sexage, fig.cap = "Caption.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
-#plot age_sex
-pca_age_sex <- fviz_pca_biplot(
-  pca_res,
-  geom.ind = "point",                # samples as points
-  habillage = pca_df$age_sex,           # color points by race
-  addEllipses = TRUE,                # ellipses for race groups
-  ellipse.level = 0.95,
-  repel = TRUE,                      # avoid overlapping arrows
-  geom.var = c("arrow", "text"),     # arrows + gene labels
-  select.var = list(name = top_genes),  # only top variable genes
-  col.var = "red",                    # arrows in red
-  alpha.var = 0.7) +                   # slightly transparent arrows
-labs(
-  x = paste0("PC1 (", var_explained[1], "%)"),
-  y = paste0("PC2 (", var_explained[2], "%)")) +
-theme_classic(base_size = 14) +
-theme(legend.position = "top")
-
-pca_age_sex
-```
-
-```{r fig-pca-race, fig.cap = "Caption.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
-#plot race
-pca_race <- fviz_pca_biplot(
-  pca_res,
-  geom.ind = "point",                # samples as points
-  habillage = pca_df$race,           # color points by race
-  addEllipses = TRUE,                # ellipses for race groups
-  ellipse.level = 0.95,
-  repel = TRUE,                      # avoid overlapping arrows
-  geom.var = c("arrow", "text"),     # arrows + gene labels
-  select.var = list(name = top_genes),  # only top variable genes
-  col.var = "red",                    # arrows in red
-  alpha.var = 0.7) +               # slightly transparent arrows 
-labs(
-  x = paste0("PC1 (", var_explained[1], "%)"),
-  y = paste0("PC2 (", var_explained[2], "%)")) +
-theme_classic(base_size = 14) +
-theme(legend.position = "top")
-
-pca_race
+oneway.test(PC1 ~ race, data = pca_df, var.equal = FALSE)
+oneway.test(PC2 ~ race, data = pca_df, var.equal = FALSE)
 ```
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE}
@@ -693,8 +685,7 @@ run_gene_analysis <- function(gene_list, gene_set_name, condition = "age_sex") {
           axis.title.x =element_text(size =16),
           axis.title.y =element_text(size =16),
           strip.text =element_text(size =12,face ="bold")) +
-    labs(y ="Log2(Counts Per Million)", 
-         x ="Sample",
+    labs(y ="Expression (log2(CPM))",
          fill ="Sample:")
   
   if (nrow(sig_pairs) > 0) {
@@ -756,27 +747,89 @@ housekeeping_agesex_results  <- run_gene_analysis(housekeeping_genes, "Housekeep
 housekeeping_race_results  <- run_gene_analysis(housekeeping_genes, "Housekeeping", condition = "race")
 ```
 
-```{r fig-heatmap-top20, fig.cap = "Expression of Genes with the Greatest Variability", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
-top20_agesex_results$heatmap
+# Results
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+#view n numbers by category and create kable tables 
+raw_counts_cleaned %>% 
+  count(age_sex) %>% 
+  arrange(age_sex) %>% 
+  rename(`Age-Sex Group` = age_sex, `Sample Count` = n) %>% 
+  kable("latex", booktabs = TRUE, caption = "Sample counts by Age-Sex") %>% 
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+raw_counts_cleaned %>% 
+  count(race) %>% 
+  arrange(race) %>% 
+  rename(`Race` = race, `Sample Count` = n) %>% 
+  kable("latex", booktabs = TRUE, caption = "Sample counts by Race") %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
 ```
 
-```{r fig-heatmap-top20-race, fig.cap = "Expression of of Genes with the Greatest Variability", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
-top20_race_results$heatmap
+```{r fig-rna-pie-chart, fig.cap = "Detected RNA Types in iPSC Samples Analzyed using RNA Seq. The number of genes detected in each RNA category from RNA-seq data were counted and plotted as a pie chart (left). Small categories (< 2 %), such as rRNA, tRNA, and immunoglobulin genes, were combined into an 'Other' category. The expression of genes, using raw count per million data, was averaged by type of RNA and plotted as a pie chart (right).", fig.width=10, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
+plot_RNA_types_final + plot_RNA_expression_final 
 ```
 
-```{r fig-heatmap-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-pluri_agesex_results$heatmap
+```{r fig-pca-sexage, fig.cap = "Principal Component Analysis (PCA) grouped by Donor's Age and Sex. PCA of log2 gene expression across all samples. PCA1 and PCA2 explain 10.5% and 6.4# of the variance, respectively. Sample are colored by age-sex groups and ellipses represent 95% confidence intervals for each group. Two twenty genes contributing most to the variance are labeled as vactors.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+#plot age_sex
+pca_age_sex <- fviz_pca_biplot(
+  pca_res,
+  geom.ind = "point",                # samples as points
+  habillage = pca_df$age_sex,           # color points by race
+  addEllipses = TRUE,                # ellipses for race groups
+  ellipse.level = 0.95,
+  repel = TRUE,                      # avoid overlapping arrows
+  geom.var = c("arrow", "text"),     # arrows + gene labels
+  select.var = list(name = top_genes),  # only top variable genes
+  col.var = "red",                    # arrows in red
+  alpha.var = 0.7) +                   # slightly transparent arrows
+labs(
+  x = paste0("PC1 (", var_explained[1], "%)"),
+  y = paste0("PC2 (", var_explained[2], "%)")) +
+theme_classic(base_size = 14) +
+theme(legend.position = "top")
+
+pca_age_sex
 ```
 
-```{r fig-heatmap-pluripotency-race, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-pluri_race_results$heatmap
+```{r fig-pca-race, fig.cap = "Principal Component Analysis (PCA) grouped by Donor's Race. PCA of log2 gene expression across all samples. PCA1 and PCA2 explain 10.5% and 6.4# of the variance, respectively. Sample are colored by race groups and ellipses represent 95% confidence intervals for each group. Two twenty genes contributing most to the variance are labeled as vactors.", fig.width=10, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+#plot race
+pca_race <- fviz_pca_biplot(
+  pca_res,
+  geom.ind = "point",                # samples as points
+  habillage = pca_df$race,           # color points by race
+  addEllipses = TRUE,                # ellipses for race groups
+  ellipse.level = 0.95,
+  repel = TRUE,                      # avoid overlapping arrows
+  geom.var = c("arrow", "text"),     # arrows + gene labels
+  select.var = list(name = top_genes),  # only top variable genes
+  col.var = "red",                    # arrows in red
+  alpha.var = 0.7) +               # slightly transparent arrows 
+labs(
+  x = paste0("PC1 (", var_explained[1], "%)"),
+  y = paste0("PC2 (", var_explained[2], "%)")) +
+theme_classic(base_size = 14) +
+theme(legend.position = "top")
+
+pca_race
 ```
 
-```{r fig-bargraph-pluripotency, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r fig-heatmap-pluripotency, fig.cap = "Heatmap of Pluripotency Gene Expression. Rows correspond to genes and columns correspond to samples grouped by age-sex (top) and race (bottom).Colors indicate relative expression levels based on log2 count per million expression.  Hierarchical clustering was applied to the genes to highlight patterns of expression.", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+
+pluri_age_sex_hm <- pluri_agesex_results$heatmap
+pluri_race_hm <- pluri_race_results$heatmap
+
+pluri_g1 <- pluri_age_sex_hm$gtable
+pluri_g2 <- pluri_race_hm$gtable
+
+grid.arrange(pluri_g1, pluri_g2, ncol = 1) 
+```
+
+```{r fig-bargraph-pluripotency, fig.cap = "Expression of Pluripotency Genes by Age-Sex. Bar plots of log2 count per million gene expression by pluripotency gene. Bars represent mean expression ± standard error. Pairwise statistical significance was determined using Games-Howell post hoc tests following Welch’s ANOVA, and significance was indicated with asterisks:  p < 0.05 (\\texttt{*}), p < 0.01 (\\texttt{**}), p < 0.001 (\\texttt{***}).", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 pluri_agesex_results$plot
 ```
 
-```{r fig-bargraph-pluripotency-race, fig.cap = "Expression of Pluripotency Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r fig-bargraph-pluripotency-race, fig.cap = "Expression of Pluripotency Genes by Race. Bar plots of log2 count per million gene expression by pluripotency gene. Bars represent mean expression ± standard error. Pairwise statistical significance was determined using Games-Howell post hoc tests following Welch’s ANOVA, and significance was indicated with asterisks:  p < 0.05 (\\texttt{*}), p < 0.01 (\\texttt{**}), p < 0.001 (\\texttt{***})s", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 pluri_race_results$plot
 ```
 
@@ -836,19 +889,21 @@ pluri_race_results$anova_fdr
 pluri_race_results$Games_Howell_fdr
 ```
 
-```{r fig-heatmap-diff, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-diff_agesex_results$heatmap
+```{r fig-heatmap-diff, fig.cap = "Heatmap of Differentiation Gene Expression. Rows correspond to genes and columns correspond to samples grouped by age-sex (top) and race (bottom).Colors indicate relative expression levels based on log2 count per million expression.  Hierarchical clustering was applied to the genes to highlight patterns of expression.", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+diff_age_sex_hm <- diff_agesex_results$heatmap
+diff_race_hm <- diff_race_results$heatmap
+
+diff_g1 <- diff_age_sex_hm$gtable
+diff_g2 <- diff_race_hm$gtable
+
+grid.arrange(diff_g1, diff_g2, ncol = 1) 
 ```
 
-```{r fig-heatmap-diff-race, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-diff_race_results$heatmap
-```
-
-```{r fig-bargraph-diff, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r fig-bargraph-diff, fig.cap = "Expression of Differentiation Genes by Age-Sex. Bar plots display log2 count per million gene expression by differentiation gene. Bars represent mean expression ± standard error. Pairwise statistical significance was determined using Games-Howell post hoc tests following Welch’s ANOVA, and significance was indicated with asterisks:  p < 0.05 (\\texttt{*}), p < 0.01 (\\texttt{**}), p < 0.001 (\\texttt{***}).", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 diff_agesex_results$plot
 ```
 
-```{r fig-bargraph-diff-race, fig.cap = "Expression of Differentiation Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r fig-bargraph-diff-race, fig.cap = "Expression of Differentiation Genes by Race. Bar plots display log2 count per million gene expression by differentiation gene. Bars represent mean expression ± standard error. Pairwise statistical significance was determined using Games-Howell post hoc tests following Welch’s ANOVA, and significance was indicated with asterisks:  p < 0.05 (\\texttt{*}), p < 0.01 (\\texttt{**}), p < 0.001 (\\texttt{***}).", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 diff_race_results$plot
 ```
 
@@ -904,19 +959,21 @@ lmm_diff_race_anova
 lmm_diff_race_emm
 ```
 
-```{r fig-heatmap-hk, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-housekeeping_agesex_results$heatmap
+```{r fig-heatmap-hk, fig.cap = "Heatmap of Housekeeping Gene Expression. Rows correspond to genes and columns correspond to samples grouped by age-sex (top) and race (bottom).Colors indicate relative expression levels based on log2 count per million expression.  Hierarchical clustering was applied to the genes to highlight patterns of expression.", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+housekeeping_age_sex_hm <- housekeeping_agesex_results$heatmap
+housekeeping_race_hm <- housekeeping_race_results$heatmap
+
+housekeeping_g1 <- housekeeping_age_sex_hm$gtable
+housekeeping_g2 <- housekeeping_race_hm$gtable
+
+grid.arrange(housekeeping_g1, housekeeping_g2, ncol = 1) 
 ```
 
-```{r fig-heatmap-hk-race, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=5, echo=FALSE, warning=FALSE, message=FALSE}
-housekeeping_race_results$heatmap
-```
-
-```{r fig-bargraph-hk, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r fig-bargraph-hk, fig.cap = "Expression of Housekeeping Genes by Age-Sex. Bar plots display log2 count per million gene expression by housekeeping gene. Bars represent mean expression ± standard error. Pairwise statistical significance was determined using Games-Howell post hoc tests following Welch’s ANOVA, and significance was indicated with asterisks:  p < 0.05 (\\texttt{*}), p < 0.01 (\\texttt{**}), p < 0.001 (\\texttt{***}).", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 housekeeping_agesex_results$plot
 ```
 
-```{r fig-bargraph-hk-race, fig.cap = "Expression of Housekeeping Genes", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
+```{r fig-bargraph-hk-race, fig.cap = "Expression of Housekeeping Genes by Race. Bar plots display log2 count per million gene expression by housekeeping gene. Bars represent mean expression ± standard error. Pairwise statistical significance was determined using Games-Howell post hoc tests following Welch’s ANOVA, and significance was indicated with asterisks:  p < 0.05 (\\texttt{*}), p < 0.01 (\\texttt{**}), p < 0.001 (\\texttt{***}).", fig.width=8, fig.height=10, echo=FALSE, warning=FALSE, message=FALSE}
 housekeeping_race_results$plot
 ```
 
@@ -1021,44 +1078,47 @@ plot_lmm_residuals <- function(lmm, data, fixed_effect, extreme_sd = 2) {
     extreme_residuals = extreme_residuals))
 }
 
-#pluripotency genes
-residuals_pluri_age_sex <- plot_lmm_residuals(
-  lmm = lmm_pluri_agesex,
-  data = df_pluri_agesex,
-  fixed_effect = "age_sex",
-  extreme_sd = 2)
+```
 
-residuals_pluri_race <- plot_lmm_residuals(
-  lmm = lmm_pluri_race,
-  data = df_pluri_race,
-  fixed_effect = "race",
-  extreme_sd = 2)
+```{r, echo=FALSE, warning=FALSE, message=FALSE, results='hide'}
+#pluripotency genes
+#residuals_pluri_age_sex <- plot_lmm_residuals(
+#  lmm = lmm_pluri_agesex,
+#  data = df_pluri_agesex,
+#  fixed_effect = "age_sex",
+#  extreme_sd = 2)
+
+#residuals_pluri_race <- plot_lmm_residuals(
+ # lmm = lmm_pluri_race,
+  #data = df_pluri_race,
+  #fixed_effect = "race",
+  #extreme_sd = 2)
 
 #differentiation genes
-residuals_diff_age_sex <- plot_lmm_residuals(
-  lmm = lmm_diff_agesex,
-  data = df_diff_agesex,
-  fixed_effect = "age_sex",
-  extreme_sd = 2)
+#residuals_diff_age_sex <- plot_lmm_residuals(
+ # lmm = lmm_diff_agesex,
+#  data = df_diff_agesex,
+ # fixed_effect = "age_sex",
+  #extreme_sd = 2)
 
-residuals_diff_race <- plot_lmm_residuals(
-  lmm = lmm_diff_race,
-  data = df_diff_race,
-  fixed_effect = "race",
-  extreme_sd = 2)
+#residuals_diff_race <- plot_lmm_residuals(
+ # lmm = lmm_diff_race,
+  #data = df_diff_race,
+  #fixed_effect = "race",
+  #extreme_sd = 2)
 
 #housekeeping genes
-residuals_housekeeping_age_sex <- plot_lmm_residuals(
-  lmm = lmm_housekeeping_agesex,
-  data = df_housekeeping_agesex,
-  fixed_effect = "age_sex",
-  extreme_sd = 2)
+#residuals_housekeeping_age_sex <- plot_lmm_residuals(
+ # lmm = lmm_housekeeping_agesex,
+#  data = df_housekeeping_agesex,
+ # fixed_effect = "age_sex",
+#  extreme_sd = 2)
 
-residuals_housekeeping_race <- plot_lmm_residuals(
-  lmm = lmm_housekeeping_race,
-  data = df_housekeeping_race,
-  fixed_effect = "race",
-  extreme_sd = 2)
+#residuals_housekeeping_race <- plot_lmm_residuals(
+ # lmm = lmm_housekeeping_race,
+  #data = df_housekeeping_race,
+  #fixed_effect = "race",
+  #extreme_sd = 2)
 ```
 
 # Discussion
@@ -1098,6 +1158,14 @@ PCA1 and age_sex (p = 0.1993) and PCA2 (p \< 0.001)
 
 PCA1 and race (p \< 0.001) and PCA2 (p \< 0.001)
 
+When tested independently, neither age nor sex was significantly
+associated with PC1 or PC2.\
+
+However, when individuals were grouped by age–sex categories, a
+significant effect emerged (Welch’s ANOVA p = ), suggesting that
+specific combinations of age and sex capture multivariate expression
+patterns not explained by either variable alone.
+
 ### top 20 genes:
 
 sex linked RPS4Y1 Ribosomal protein S4, Y-linked. Present only in males.
@@ -1125,34 +1193,41 @@ differences. MEG3 Long non-coding RNA, tumor suppressor, epigenetic
 regulation, differentiation-related. LINC00261 Long non-coding RNA,
 involved in endoderm differentiation.
 
-### pluripotency
+### Pluripotency, Differentiation, and Houskeeping Gene Expression
 
-Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
-TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A,alp
+The expression of pluripotency genes, SOX2, OCT4 (POU5F1), KLF4, c-Myc
+(MYC), TRA-1-81 and 1-60 (PODXL), NANOG, SSEA4 (FUT4), LIN28A, and
+Alkaline Phosphatase (ALPL)., were analyzed after grouping by both
+age-sex and race. These genes include transcription factors, SOX2, OCT4,
+KLF4, and NANOG, involved in maintaining a pluripotent state, cell
+surface markers, SSEA4 and TRA-1-81/TRA-1-60, RNA binding protein,
+LIN28A, and a highly expressed enzyme in pluripotent cells, Alkaline
+Phosphatase. These genes have been found to be highly expressed in
+pluripotent cells, such as iPSCs., (\_\_\_\_\_\_source).
 
-linear mixed model Expression \~ age_sex + 1\|`Gene name`
+To determine if the expression of these pluripotent genes varied across
+conditions, two linear mixed models were used. Expression was modeled as
+a function of age-sex, with random intercepts grouped by gene to account
+for baseline differences in gene expression, where j represents the
+observation of each gene, i, and u represents the part of the intercept
+that is unique to each gene.
 
-“We fit linear mixed-effects models of the form\
+$$
+\hat{Expression}_{ij} = \beta_0 + \beta_1 ({age\_sex}_{ij}) + u_{0j} + \varepsilon_{ij}
+$$
 
-**Expression \~ age_sex + (1 \| Gene)**\
+The same model was then run, but using race as the fixed effect. In both
+cases, Type III Analysis of Variance Table with Satterthwaite's method
+were used to determine which groups had statically significance
+differences in gene expression when compared to the reference groups
+(female 40s and African American).
 
-using lme4/lmerTest, with Satterthwaite-adjusted p-values.”
-
-data: pluripotency genes
-
-each gene has its own intercept, age_sex is a fixed effect
-
-Residual variance = 0.189 and gene intercept variance = 9.82 means most
-of the variation is between genes, not sex and age. the genes differ a
-lot. residual noise is small, model fits wells
-
-Fixed effects
-
-70s female, lower pluripotency expression, - 0.097, p \< 0.05. 6.5%
-decrease
-
-70s male, higher pluripotency expression, +0.179, p \< 0.001 13%
-increase
+Residual variance was 0.189 and 0.190 when grouping by age-sex and race,
+respectively, and gene intercept variance was 9.82 for both. This
+suggests that the majoirty of the variance is between genes, not between
+groups. It was found that 70s female group displayed a 6.5% decrease in
+pluripotency expression ( - 0.097, p \< 0.05.), whereas 70s male saw a
+13% increase in pluripotency expression (+0.179, p \< 0.001).
 
 no difference between other groups and the reference group (40s female)
 

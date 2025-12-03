@@ -218,10 +218,12 @@
 \makeatother
 \subtitle{Final Project}
 \author{Trinity Minard}
-\date{2025-11-30}
+\date{2025-12-03}
 \begin{document}
 \maketitle
 
+
+\section{Abstract}\label{abstract}
 
 \section{Introduction}\label{introduction}
 
@@ -296,50 +298,92 @@ housekeeping genes.
 
 \subsubsection{Data Cleaning}\label{data-cleaning}
 
-RNA-Seq counts per million data was acquired from Stemformatics using
-the Carcamo-Orive (2017) dataset (Carcamo-Orive et al., 2017). Genes in
-this study were referred to by their Ensembl ID, so gene information,
-such as name and RNA type, was integrated from the Emsembl database.
+RNA-Seq counts per million data (named: cpm\_data), and sample metadata
+(named: raw\_counts) were acquired from Stemformatics using the
+Carcamo-Orive (2017) dataset (Carcamo-Orive et al., 2017). Genes in this
+study were referred to by their Ensembl ID, so gene information, such as
+name and RNA type, was integrated from the Ensembl database. Using R (R
+Core Team, 2025), the raw count per million data was converted to a log
+base 2 scale with a 0.5 offset to prevent samples with a count of 0 from
+becoming skewed. Values for age, from the metadata file, were grouped by
+decade, and an additional column was added for an age + sex category
+(i.e., 40s female). Information from the sample description was then
+extracted to create columns for race and insulin resistance. The
+metadata and log₂ counts per million files were then merged into one
+data frame for further analysis.
 
-\emph{further cleaning of the count per million data will be added}
+\subsubsection{Category Tables}\label{category-tables}
 
-\subsubsection{Figure 1}\label{figure-1}
+The number of samples for each group within the age-sex and race
+categories were summarized and displayed as two tables using the knitr
+(Xie, 2025) and kableExtra (Zhu, 2024) packages.
+
+\subsubsection{Pie Charts by RNA
+Category}\label{pie-charts-by-rna-category}
 
 Genes detected in the RNA Seq counts per million data were grouped into
-the following catagories: Protein coding, long non coding RNA (lncRNA),
+the following categories: Protein coding, long non-coding RNA (lncRNA),
 Small RNAs, Pseudogenes, and Other. A count of the number of genes in
 each category was then performed by using the dplyr package (Wickham et
-al., 2023) from tidyverse (Wickham, 2023). A fraction and percentage
-were then calculated by dividing the count by the sum of count
-(i.e.~total count for all categories). The scales (Wickham, Pedersen, et
-al., 2025) package from ggplot2 (Wickham, Chang, et al., 2025) was used
-to create a pie chart of the counts by RNA category.
+al., 2023) from tidyverse (Wickham, 2023). The total expression of each
+category was also calculated using the raw count per million data. The
+scales (Wickham, Pedersen, et al., 2025) package from ggplot2 (Wickham,
+Chang, et al., 2025) was used to create two pie charts, one of the gene
+counts and one of the gene expression by RNA category, plotted together
+using the patchwork package (Pedersen, 2025).
 
-\emph{continue methods for following figures \ldots{}}
+\subsubsection{Principal Component Analysis (PCA)
+Plots}\label{principal-component-analysis-pca-plots}
+
+Log₂ expression values were first cleaned by removing entries without
+gene information and duplicate gene names. Gene variances were
+calculated across the samples, and genes with no variance were removed.
+To visualize the major sources of variation in the expression data, a
+principal component analysis (PCA) was performed using the FactoMineR
+package (Husson et al., 2025), which identifies the major axes of
+variation in the dataset. To assess if sample characteristics (sex, age
+decade, combined age sex groups, and race) influenced the PCA's
+structure, a Welch's one-way ANOVA, which does not assume equal
+variance, was performed separately for PCA1 and PCA2. Significant
+differences were found for the age sex groups and race categories, so
+two PCA biplots were generated, each overlaying confidence ellipses
+corresponding to either age sex groups or race. On both of the biplots,
+the top twenty genes with the highest variance across all samples were
+labeled and displayed as vectors.
+
+\subsubsection{Pluripotency, Differentiation, and Housekeeping Gene
+Expression}\label{pluripotency-differentiation-and-housekeeping-gene-expression}
+
+The log₂ expression of genes, categorized as pluripotency markers,
+differentiation markers, and housekeeping genes, was compared across
+sample groups (age-sex and race) using heatmaps, linear mixed-effects
+models, and Welch's ANOVA with post hoc Games-Howell tests. Heatmaps of
+log₂ gene expression were generated using the pheatmap package (Kolde,
+2025) to visualize overall expression patterns within each gene
+category. Linear mixed-effect models were then fit using lme4 (Bates et
+al., 2025) and lmerTest (Kuznetsova et al., 2020) to evaluate
+differences in gene expression across age-sex and race groups, while
+accounting for gene-specific baseline expression levels by using random
+intercepts for genes. Percent differences in overall gene expression
+were calculated by exponentiating the estimated log₂ scale coefficient
+back to fold change, subtracting one, and multiplying by 100. QQ plots
+and histograms were generated, but not shown here, for each model to
+view residuals and assess model assumptions. To identify which genes
+displayed statistically significant differences in expression between
+sample categories, Welch's one-way ANOVA, assuming unequal variance, was
+performed for each gene. P values were adjusted using the
+Benjamini-Hochberg method due to the high number of tests that were
+performed. For genes with significant ANOVA results, Games-Howell post
+hoc tests, using rstatix (\textbf{R-statix?}), were performed and
+p-values were Benjamini-Hochberg corrected. Significant Games Howell
+comparisons (adjusted p \textless{} 0.05) were annotated on bar plots
+displaying log₂ expression for each gene across sample groups.
 
 \section{Results}\label{results}
 
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-rna-pie-chart-1.pdf}}
-
-}
-
-\caption{\label{fig-rna-pie-chart}Detected RNA Types in iPSC Sample
-Analzyed using RNA Seq. The number of genes detected in each RNA
-category from RNA-seq data were counted and plotted as a pie chart
-(left). Small categories (\textless{} 2 \%), such as rRNA, tRNA, and
-immunoglobulin genes, were combined into an `Other' category. The
-expression of genes, using raw count per million data, was averaged by
-type of RNA and plotted as a pie chart (right).}
-
-\end{figure}%
-
 \begin{table}[!h]
 \centering
-\caption{\label{tab:unnamed-chunk-8}Sample counts by Age-Sex}
+\caption{\label{tab:unnamed-chunk-12}Sample counts by Age-Sex}
 \centering
 \begin{tabular}[t]{lr}
 \toprule
@@ -360,7 +404,7 @@ Age-Sex Group & Sample Count\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:unnamed-chunk-8}Sample counts by Race}
+\caption{\label{tab:unnamed-chunk-12}Sample counts by Race}
 \centering
 \begin{tabular}[t]{lr}
 \toprule
@@ -381,11 +425,34 @@ NA & 16\\
 
 \centering{
 
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-rna-pie-chart-1.pdf}}
+
+}
+
+\caption{\label{fig-rna-pie-chart}Detected RNA Types in iPSC Samples
+Analzyed using RNA Seq. The number of genes detected in each RNA
+category from RNA-seq data were counted and plotted as a pie chart
+(left). Small categories (\textless{} 2 \%), such as rRNA, tRNA, and
+immunoglobulin genes, were combined into an `Other' category. The
+expression of genes, using raw count per million data, was averaged by
+type of RNA and plotted as a pie chart (right).}
+
+\end{figure}%
+
+\begin{figure}
+
+\centering{
+
 \pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-pca-sexage-1.pdf}}
 
 }
 
-\caption{\label{fig-pca-sexage}Caption.}
+\caption{\label{fig-pca-sexage}Principal Component Analysis (PCA)
+grouped by Donor's Age and Sex. PCA of log2 gene expression across all
+samples. PCA1 and PCA2 explain 10.5\% and 6.4\# of the variance,
+respectively. Sample are colored by age-sex groups and ellipses
+represent 95\% confidence intervals for each group. Two twenty genes
+contributing most to the variance are labeled as vactors.}
 
 \end{figure}%
 
@@ -397,33 +464,12 @@ NA & 16\\
 
 }
 
-\caption{\label{fig-pca-race}Caption.}
-
-\end{figure}%
-
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-heatmap-top20-1.pdf}}
-
-}
-
-\caption{\label{fig-heatmap-top20}Expression of Genes with the Greatest
-Variability}
-
-\end{figure}%
-
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-heatmap-top20-race-1.pdf}}
-
-}
-
-\caption{\label{fig-heatmap-top20-race}Expression of of Genes with the
-Greatest Variability}
+\caption{\label{fig-pca-race}Principal Component Analysis (PCA) grouped
+by Donor's Race. PCA of log2 gene expression across all samples. PCA1
+and PCA2 explain 10.5\% and 6.4\# of the variance, respectively. Sample
+are colored by race groups and ellipses represent 95\% confidence
+intervals for each group. Two twenty genes contributing most to the
+variance are labeled as vactors.}
 
 \end{figure}%
 
@@ -435,21 +481,12 @@ Greatest Variability}
 
 }
 
-\caption{\label{fig-heatmap-pluripotency}Expression of Pluripotency
-Genes}
-
-\end{figure}%
-
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-heatmap-pluripotency-race-1.pdf}}
-
-}
-
-\caption{\label{fig-heatmap-pluripotency-race}Expression of Pluripotency
-Genes}
+\caption{\label{fig-heatmap-pluripotency}Heatmap of Pluripotency Gene
+Expression. Rows correspond to genes and columns correspond to samples
+grouped by age-sex (top) and race (bottom).Colors indicate relative
+expression levels based on log2 count per million expression.
+Hierarchical clustering was applied to the genes to highlight patterns
+of expression.}
 
 \end{figure}%
 
@@ -462,7 +499,12 @@ Genes}
 }
 
 \caption{\label{fig-bargraph-pluripotency}Expression of Pluripotency
-Genes}
+Genes by Age-Sex. Bar plots of log2 count per million gene expression by
+pluripotency gene. Bars represent mean expression ± standard error.
+Pairwise statistical significance was determined using Games-Howell post
+hoc tests following Welch's ANOVA, and significance was indicated with
+asterisks: p \textless{} 0.05 (\texttt{*}), p \textless{} 0.01
+(\texttt{**}), p \textless{} 0.001 (\texttt{***}).}
 
 \end{figure}%
 
@@ -475,7 +517,12 @@ Genes}
 }
 
 \caption{\label{fig-bargraph-pluripotency-race}Expression of
-Pluripotency Genes}
+Pluripotency Genes by Race. Bar plots of log2 count per million gene
+expression by pluripotency gene. Bars represent mean expression ±
+standard error. Pairwise statistical significance was determined using
+Games-Howell post hoc tests following Welch's ANOVA, and significance
+was indicated with asterisks: p \textless{} 0.05 (\texttt{*}), p
+\textless{} 0.01 (\texttt{**}), p \textless{} 0.001 (\texttt{***})s}
 
 \end{figure}%
 
@@ -487,20 +534,12 @@ Pluripotency Genes}
 
 }
 
-\caption{\label{fig-heatmap-diff}Expression of Differentiation Genes}
-
-\end{figure}%
-
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-heatmap-diff-race-1.pdf}}
-
-}
-
-\caption{\label{fig-heatmap-diff-race}Expression of Differentiation
-Genes}
+\caption{\label{fig-heatmap-diff}Heatmap of Differentiation Gene
+Expression. Rows correspond to genes and columns correspond to samples
+grouped by age-sex (top) and race (bottom).Colors indicate relative
+expression levels based on log2 count per million expression.
+Hierarchical clustering was applied to the genes to highlight patterns
+of expression.}
 
 \end{figure}%
 
@@ -512,7 +551,13 @@ Genes}
 
 }
 
-\caption{\label{fig-bargraph-diff}Expression of Differentiation Genes}
+\caption{\label{fig-bargraph-diff}Expression of Differentiation Genes by
+Age-Sex. Bar plots display log2 count per million gene expression by
+differentiation gene. Bars represent mean expression ± standard error.
+Pairwise statistical significance was determined using Games-Howell post
+hoc tests following Welch's ANOVA, and significance was indicated with
+asterisks: p \textless{} 0.05 (\texttt{*}), p \textless{} 0.01
+(\texttt{**}), p \textless{} 0.001 (\texttt{***}).}
 
 \end{figure}%
 
@@ -525,7 +570,12 @@ Genes}
 }
 
 \caption{\label{fig-bargraph-diff-race}Expression of Differentiation
-Genes}
+Genes by Race. Bar plots display log2 count per million gene expression
+by differentiation gene. Bars represent mean expression ± standard
+error. Pairwise statistical significance was determined using
+Games-Howell post hoc tests following Welch's ANOVA, and significance
+was indicated with asterisks: p \textless{} 0.05 (\texttt{*}), p
+\textless{} 0.01 (\texttt{**}), p \textless{} 0.001 (\texttt{***}).}
 
 \end{figure}%
 
@@ -537,19 +587,12 @@ Genes}
 
 }
 
-\caption{\label{fig-heatmap-hk}Expression of Housekeeping Genes}
-
-\end{figure}%
-
-\begin{figure}
-
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-heatmap-hk-race-1.pdf}}
-
-}
-
-\caption{\label{fig-heatmap-hk-race}Expression of Housekeeping Genes}
+\caption{\label{fig-heatmap-hk}Heatmap of Housekeeping Gene Expression.
+Rows correspond to genes and columns correspond to samples grouped by
+age-sex (top) and race (bottom).Colors indicate relative expression
+levels based on log2 count per million expression. Hierarchical
+clustering was applied to the genes to highlight patterns of
+expression.}
 
 \end{figure}%
 
@@ -561,7 +604,13 @@ Genes}
 
 }
 
-\caption{\label{fig-bargraph-hk}Expression of Housekeeping Genes}
+\caption{\label{fig-bargraph-hk}Expression of Housekeeping Genes by
+Age-Sex. Bar plots display log2 count per million gene expression by
+housekeeping gene. Bars represent mean expression ± standard error.
+Pairwise statistical significance was determined using Games-Howell post
+hoc tests following Welch's ANOVA, and significance was indicated with
+asterisks: p \textless{} 0.05 (\texttt{*}), p \textless{} 0.01
+(\texttt{**}), p \textless{} 0.001 (\texttt{***}).}
 
 \end{figure}%
 
@@ -573,33 +622,15 @@ Genes}
 
 }
 
-\caption{\label{fig-bargraph-hk-race}Expression of Housekeeping Genes}
+\caption{\label{fig-bargraph-hk-race}Expression of Housekeeping Genes by
+Race. Bar plots display log2 count per million gene expression by
+housekeeping gene. Bars represent mean expression ± standard error.
+Pairwise statistical significance was determined using Games-Howell post
+hoc tests following Welch's ANOVA, and significance was indicated with
+asterisks: p \textless{} 0.05 (\texttt{*}), p \textless{} 0.01
+(\texttt{**}), p \textless{} 0.001 (\texttt{***}).}
 
 \end{figure}%
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-1.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-2.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-3.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-4.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-5.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-6.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-7.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-8.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-9.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-10.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-11.pdf}}
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/unnamed-chunk-19-12.pdf}}
 
 \section{Discussion}\label{discussion}
 
@@ -638,6 +669,14 @@ PCA1 and age\_sex (p = 0.1993) and PCA2 (p \textless{} 0.001)
 
 PCA1 and race (p \textless{} 0.001) and PCA2 (p \textless{} 0.001)
 
+When tested independently, neither age nor sex was significantly
+associated with PC1 or PC2.\\
+
+However, when individuals were grouped by age--sex categories, a
+significant effect emerged (Welch's ANOVA p = ), suggesting that
+specific combinations of age and sex capture multivariate expression
+patterns not explained by either variable alone.
+
 \subsubsection{top 20 genes:}\label{top-20-genes}
 
 sex linked RPS4Y1 Ribosomal protein S4, Y-linked. Present only in males.
@@ -665,35 +704,43 @@ differences. MEG3 Long non-coding RNA, tumor suppressor, epigenetic
 regulation, differentiation-related. LINC00261 Long non-coding RNA,
 involved in endoderm differentiation.
 
-\subsubsection{pluripotency}\label{pluripotency}
+\subsubsection{Pluripotency, Differentiation, and Houskeeping Gene
+Expression}\label{pluripotency-differentiation-and-houskeeping-gene-expression}
 
-Expression of Pluripotency Genes (SOX2, POU5F1(OCT4), KLF4, MYC (c-Myc),
-TRA-1-81 and 1-60 (PODXL), NANOG, FUT4 (SSEA4), LIN28A,alp
+The expression of pluripotency genes, SOX2, OCT4 (POU5F1), KLF4, c-Myc
+(MYC), TRA-1-81 and 1-60 (PODXL), NANOG, SSEA4 (FUT4), LIN28A, and
+Alkaline Phosphatase (ALPL)., were analyzed after grouping by both
+age-sex and race. These genes include transcription factors, SOX2, OCT4,
+KLF4, and NANOG, involved in maintaining a pluripotent state, cell
+surface markers, SSEA4 and TRA-1-81/TRA-1-60, RNA binding protein,
+LIN28A, and a highly expressed enzyme in pluripotent cells, Alkaline
+Phosphatase. These genes have been found to be highly expressed in
+pluripotent cells, such as iPSCs., (\_\_\_\_\_\_source).
 
-linear mixed model Expression \textasciitilde{} age\_sex +
-1\textbar{}\texttt{Gene\ name}
+To determine if the expression of these pluripotent genes varied across
+conditions, two linear mixed models were used. Expression was modeled as
+a function of age-sex, with random intercepts grouped by gene to account
+for baseline differences in gene expression, where j represents the
+observation of each gene, i, and u represents the part of the intercept
+that is unique to each gene.
 
-``We fit linear mixed-effects models of the form\\
+\[
+\hat{Expression}_{ij} = \beta_0 + \beta_1 ({age\_sex}_{ij}) + u_{0j} + \varepsilon_{ij}
+\]
 
-\textbf{Expression \textasciitilde{} age\_sex + (1 \textbar{} Gene)}\\
+The same model was then run, but using race as the fixed effect. In both
+cases, Type III Analysis of Variance Table with Satterthwaite's method
+were used to determine which groups had statically significance
+differences in gene expression when compared to the reference groups
+(female 40s and African American).
 
-using lme4/lmerTest, with Satterthwaite-adjusted p-values.''
-
-data: pluripotency genes
-
-each gene has its own intercept, age\_sex is a fixed effect
-
-Residual variance = 0.189 and gene intercept variance = 9.82 means most
-of the variation is between genes, not sex and age. the genes differ a
-lot. residual noise is small, model fits wells
-
-Fixed effects
-
-70s female, lower pluripotency expression, - 0.097, p \textless{} 0.05.
-6.5\% decrease
-
-70s male, higher pluripotency expression, +0.179, p \textless{} 0.001
-13\% increase
+Residual variance was 0.189 and 0.190 when grouping by age-sex and race,
+respectively, and gene intercept variance was 9.82 for both. This
+suggests that the majoirty of the variance is between genes, not between
+groups. It was found that 70s female group displayed a 6.5\% decrease in
+pluripotency expression ( - 0.097, p \textless{} 0.05.), whereas 70s
+male saw a 13\% increase in pluripotency expression (+0.179, p
+\textless{} 0.001).
 
 no difference between other groups and the reference group (40s female)
 
@@ -812,6 +859,11 @@ Konovalova, E. V., Kolbaev, S. N., Vorotelyak, E. A. \& Vasiliev, A. V.
 of iPS and iPS-derived cells. \emph{Gene}, \emph{626}, 234--240.
 \url{https://doi.org/10.1016/j.gene.2017.05.045}
 
+\bibitem[\citeproctext]{ref-R-lme4}
+Bates, D., Maechler, M., Bolker, B. \& Walker, S. (2025). \emph{lme4:
+Linear mixed-effects models using eigen and S4}.
+\url{https://github.com/lme4/lme4/}
+
 \bibitem[\citeproctext]{ref-carcamo-orive2017}
 Carcamo-Orive, I., Hoffman, G. E., Cundiff, P., Beckmann, N. D.,
 D'Souza, S. L., Knowles, J. W., Patel, A., Papatsenko, D., Abbasi, F.,
@@ -828,17 +880,40 @@ Cerneckis, J., Cai, H. \& Shi, Y. (2024). Induced pluripotent stem cells
 \emph{Signal Transduction and Targeted Therapy}, \emph{9}(1), 112.
 \url{https://doi.org/10.1038/s41392-024-01809-0}
 
+\bibitem[\citeproctext]{ref-R-FactoMineR}
+Husson, F., Josse, J., Le, S. \& Mazet, J. (2025). \emph{FactoMineR:
+Multivariate exploratory data analysis and data mining}.
+\url{http://factominer.free.fr}
+
+\bibitem[\citeproctext]{ref-R-pheatmap}
+Kolde, R. (2025). \emph{Pheatmap: Pretty heatmaps}.
+\url{https://doi.org/10.32614/CRAN.package.pheatmap}
+
+\bibitem[\citeproctext]{ref-R-lmerTest}
+Kuznetsova, A., Bruun Brockhoff, P. \& Haubo Bojesen Christensen, R.
+(2020). \emph{lmerTest: Tests in linear mixed effects models}.
+\url{https://github.com/runehaubo/lmerTestR}
+
 \bibitem[\citeproctext]{ref-panina2020}
 Panina, Y., Germond, A. \& Watanabe, T. M. (2020). Analysis of the
 stability of 70 housekeeping genes during iPS reprogramming.
 \emph{Scientific Reports}, \emph{10}, 21711.
 \url{https://doi.org/10.1038/s41598-020-78863-5}
 
+\bibitem[\citeproctext]{ref-R-patchwork}
+Pedersen, T. L. (2025). \emph{Patchwork: The composer of plots}.
+\url{https://patchwork.data-imaginist.com}
+
 \bibitem[\citeproctext]{ref-poetsch2022}
 Poetsch, M. S., Strano, A. \& Guan, K. (2022). Human induced pluripotent
 stem cells: From cell origin, genomic stability, and epigenetic memory
 to translational medicine. \emph{Stem Cells}, \emph{40}(6), 546--555.
 \url{https://doi.org/10.1093/stmcls/sxac020}
+
+\bibitem[\citeproctext]{ref-R-base}
+R Core Team. (2025). \emph{R: A language and environment for statistical
+computing}. R Foundation for Statistical Computing.
+\url{https://www.R-project.org/}
 
 \bibitem[\citeproctext]{ref-takahashi2007}
 Takahashi, K., Tanabe, K., Ohnuki, M., Narita, M., Ichisaka, T., Tomoda,
@@ -869,6 +944,14 @@ Wickham, H., François, R., Henry, L., Müller, K. \& Vaughan, D. (2023).
 \bibitem[\citeproctext]{ref-R-scales}
 Wickham, H., Pedersen, T. L. \& Seidel, D. (2025). \emph{Scales: Scale
 functions for visualization}. \url{https://scales.r-lib.org}
+
+\bibitem[\citeproctext]{ref-R-knitr}
+Xie, Y. (2025). \emph{Knitr: A general-purpose package for dynamic
+report generation in r}. \url{https://yihui.org/knitr/}
+
+\bibitem[\citeproctext]{ref-R-kableExtra}
+Zhu, H. (2024). \emph{kableExtra: Construct complex table with kable and
+pipe syntax}. \url{http://haozhu233.github.io/kableExtra/}
 
 \end{CSLReferences}
 
