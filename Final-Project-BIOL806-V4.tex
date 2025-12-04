@@ -218,7 +218,7 @@
 \makeatother
 \subtitle{Final Project}
 \author{Trinity Minard}
-\date{2025-12-03}
+\date{2025-12-04}
 \begin{document}
 \maketitle
 
@@ -374,16 +374,16 @@ sample categories, Welch's one-way ANOVA, assuming unequal variance, was
 performed for each gene. P values were adjusted using the
 Benjamini-Hochberg method due to the high number of tests that were
 performed. For genes with significant ANOVA results, Games-Howell post
-hoc tests, using rstatix (\textbf{R-statix?}), were performed and
-p-values were Benjamini-Hochberg corrected. Significant Games Howell
-comparisons (adjusted p \textless{} 0.05) were annotated on bar plots
-displaying log₂ expression for each gene across sample groups.
+hoc tests, using rstatix (Kassambara, 2025), were performed and p-values
+were Benjamini-Hochberg corrected. Significant Games Howell comparisons
+(adjusted p \textless{} 0.05) were annotated on bar plots displaying
+log₂ expression for each gene across sample groups.
 
 \section{Results}\label{results}
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:unnamed-chunk-12}Sample counts by Age-Sex}
+\caption{\label{tab:count_tables}Sample counts by Age-Sex}
 \centering
 \begin{tabular}[t]{lr}
 \toprule
@@ -404,7 +404,7 @@ Age-Sex Group & Sample Count\\
 
 \begin{table}[!h]
 \centering
-\caption{\label{tab:unnamed-chunk-12}Sample counts by Race}
+\caption{\label{tab:count_tables}Sample counts by Race}
 \centering
 \begin{tabular}[t]{lr}
 \toprule
@@ -677,32 +677,36 @@ significant effect emerged (Welch's ANOVA p = ), suggesting that
 specific combinations of age and sex capture multivariate expression
 patterns not explained by either variable alone.
 
-\subsubsection{top 20 genes:}\label{top-20-genes}
+The top twenty genes with the greatest variability in expression across
+the iPSC samples were identified and labeled. These genes were primarily
+related to genes found on the sex chromosomes, such as male specific
+genes encoded on the Y chromosome: RPS4Y1 (var = 16.973), DDX3Y (var =
+13.869), TXLNGY (var = 10.610), KDM5D (var = 10.160), USP9Y (var =
+9.251), EIF1AY (var = 7.341), UTY (var = 7.231), NLGN4Y (var = 6.110);
+an X linked gene: RPS4XP22 (var = 5.800); and genes involved in X
+chromosome inactivation: XIST (var = 14.584) and TSIX (var = 12.091).
+Since the iPSC sample population was composed of a mix of female and
+male samples, this variability is to be expected, and was observed by
+Caramo-Orive \emph{et al}. They found that genes with greater than 2\%
+contributions to variation by sex were located on the X or Y chromosome
+(Carcamo-Orive et al., 2017).
 
-sex linked RPS4Y1 Ribosomal protein S4, Y-linked. Present only in males.
-High variance indicates sex is a strong driver. XIST X-inactive specific
-transcript. Expressed in females for X-chromosome inactivation.
-Sex-linked. DDX3Y DEAD-box helicase, Y-linked. Male-specific. TSIX
-Antisense of XIST, regulates X-chromosome inactivation. Female-specific.
-TXLNGY Y-linked, involved in transcription/translation regulation. KDM5D
-Lysine demethylase 5D, Y-linked. Male-specific. USP9Y Ubiquitin-specific
-peptidase 9, Y-linked. Male-specific. EIF1AY Eukaryotic translation
-initiation factor 1A, Y-linked. Male-specific. UTY Ubiquitously
-transcribed tetratricopeptide repeat, Y-linked. Male-specific. NLGN4Y
-Neuroligin 4, Y-linked. Male-specific. RPS4XP22 Pseudogene similar to
-RPS4X/RPS4Y.
-
-other genes CST1 Cystatin SN, extracellular protease inhibitor. May vary
-in differentiation. CER1 Cerberus, secreted factor involved in early
-development and differentiation. LARGE1 Glycosyltransferase, involved in
-post-translational modification. NLRP2 NLR family pyrin domain
-containing 2, involved in early development, oocyte/embryo regulation.
-COL3A1 Collagen type III alpha 1, ECM protein, differentiation-related.
-ZNF208 Zinc finger protein, transcription factor, potential regulatory
-role. APOA1 Apolipoprotein A1, lipid transport, may reflect metabolic
-differences. MEG3 Long non-coding RNA, tumor suppressor, epigenetic
-regulation, differentiation-related. LINC00261 Long non-coding RNA,
-involved in endoderm differentiation.
+The remaining nine genes with high variability in gene expression in
+iPSCs samples were associated with a varietly of cell functions. CER1
+(var = 7.325) and NLRP2 (var = 6.402) are associated with embryonic
+development and early differentiation, tumor suppressors MEG3 (var =
+5.980) and LINC00261 (var = 5.554P), the transcription factors ZNF208
+(car = 6.294), APOA1 (var = 6.096) involved in lipid transport, LARGE1
+(var = 6.874), a gene involved in glycosylation in the Golgi apparatuss,
+CST1 (var = 9.794), a cysteine protease inhibitor , and COL3A1 (var =
+6.400) for collagen type III, an extracellular matrix protein.
+Caramo-Orive \emph{et al} investigated the two 200 genes with the most
+variability by performing a key driver analyses. They also found that
+LINC00261, CER1, and APOA2 (similar to APOA1) were key drivers of
+variability in iPSC samples, in addition to four other genes, GATA4,
+GATA6, EOMES, and FOXQ1 (Carcamo-Orive et al., 2017). These genes could
+be futher investigated to determine how their expression influences iPSC
+pluripotency and differentiation.
 
 \subsubsection{Pluripotency, Differentiation, and Houskeeping Gene
 Expression}\label{pluripotency-differentiation-and-houskeeping-gene-expression}
@@ -710,138 +714,223 @@ Expression}\label{pluripotency-differentiation-and-houskeeping-gene-expression}
 The expression of pluripotency genes, SOX2, OCT4 (POU5F1), KLF4, c-Myc
 (MYC), TRA-1-81 and 1-60 (PODXL), NANOG, SSEA4 (FUT4), LIN28A, and
 Alkaline Phosphatase (ALPL)., were analyzed after grouping by both
-age-sex and race. These genes include transcription factors, SOX2, OCT4,
-KLF4, and NANOG, involved in maintaining a pluripotent state, cell
-surface markers, SSEA4 and TRA-1-81/TRA-1-60, RNA binding protein,
-LIN28A, and a highly expressed enzyme in pluripotent cells, Alkaline
-Phosphatase. These genes have been found to be highly expressed in
-pluripotent cells, such as iPSCs., (\_\_\_\_\_\_source).
+age-sex and race. These genes include transcription factors, SOX2
+(SRY-box transciption factor 2), OCT4 (octamer-binding transcription
+factor 4), KLF4 (kruppel-like factor 4), and NANOG (nanog homeobox),
+involved in maintaining a pluripotent state, cell surface markers, SSEA4
+(stage-specific embryonic antigen-4) and TRA-1-81/TRA-1-60 (tumor
+related antigen), RNA binding protein, LIN28A (lin-28 homolog A), and a
+highly expressed enzyme in pluripotent cells, alkaline phosphatase.
+These genes have been found to be highly expressed in pluripotent cells,
+such as iPSCs (Takahashi et al., 2007).
 
 To determine if the expression of these pluripotent genes varied across
-conditions, two linear mixed models were used. Expression was modeled as
-a function of age-sex, with random intercepts grouped by gene to account
-for baseline differences in gene expression, where j represents the
-observation of each gene, i, and u represents the part of the intercept
-that is unique to each gene.
+conditions, a linear mixed model was used. The predicted expression was
+modeled with fixed effects age decade, sex and race, with random
+intercepts grouped by gene to account for baseline differences in gene
+expression. In the equation, the observation of each gene is represented
+as `o' , each gene is represented as `g', and `u' represents that the
+intercept is unique to each gene.
 
 \[
-\hat{Expression}_{ij} = \beta_0 + \beta_1 ({age\_sex}_{ij}) + u_{0j} + \varepsilon_{ij}
+\hat{Expression}_{og} = \beta_0 + \beta_1 ({age\_decade}_{og}) + \beta_2 ({sex}_{og} ) + \beta_3 ({race}_{og}) + u_{0g} + \varepsilon
 \]
 
-The same model was then run, but using race as the fixed effect. In both
-cases, Type III Analysis of Variance Table with Satterthwaite's method
-were used to determine which groups had statically significance
-differences in gene expression when compared to the reference groups
-(female 40s and African American).
+Fixed-effect significance was assessed using t-tests with
+Satterthwaite-approximated degrees of freedom to evaluate differences in
+gene expression relative to the reference groups (female, age 40s,
+African American).
 
-Residual variance was 0.189 and 0.190 when grouping by age-sex and race,
-respectively, and gene intercept variance was 9.82 for both. This
-suggests that the majoirty of the variance is between genes, not between
-groups. It was found that 70s female group displayed a 6.5\% decrease in
-pluripotency expression ( - 0.097, p \textless{} 0.05.), whereas 70s
-male saw a 13\% increase in pluripotency expression (+0.179, p
-\textless{} 0.001).
+Residual variance was 0.188 and gene intercept variance was 9.82, which
+suggests that the majority of the variance is between genes, not between
+groups.
 
-no difference between other groups and the reference group (40s female)
+It was found that there was no significant difference between female and
+male samples, but there was a 6.5\% decrease in expression in 70s
+samples (\(\beta\) = - 0.097, p \textless{} 0.05). The 70s female group
+displayed a 6.5\% decrease in pluripotency expression (\(\beta\) = -
+0.097, p \textless{} 0.05.), whereas 70s male saw a 13\% increase in
+pluripotency expression (\(\beta\) = + 0.179, p \textless{} 0.001).
+There was no observed difference between the other groups age-sex groups
+and the reference group (40s female), suggesting that iPSCs generated
+from donors in their 70s differ in their expression of pluripotency
+genes when compared to donors between the ages of 40 and 70. These
+results are observed in Figure 4 top heatmap, which display higher
+expression in 70s males for several pluripotency genes (c-MYC, KLF4,
+SSEA4 (FUT4), and OCT4 (POU5F1)), and lower expression in several genes
+for 70s female (ALPL, LIN28A, SOX2, TRA-1-81/TRA-1-60 (PODXL), and
+c-MYC). When looking at race, iPSC samples from South Asian donors
+displayed a 10\% decrease in pluripotency gene expression (\(\beta\) =
+-0.143, p \textless{} 0.01), but there was no difference between the
+other groups and the reference group, African Americans. This can be
+seen in Figure 4, where pluripotency expression for South Asian
+displayed both increased (SSEA4 (FUT4) and KLF4) and decreased
+expression (OCT4 (POU5F1), NANOG, LIN28A, SOX2, and ALPL) in the
+majority of pluripotency genes.
 
-Type III Analysis of Variance Table with Satterthwaite's method -
-confirms age\_sex have a significant effect on pluripotency gene
-expression when averaged across all genes. p \textless{} 0.001.
+To look at the effect of individual genes, Welch's one-way ANOVA,
+assuming unequal variance, followed by Games-Howell post hoc tests with
+Benjamini-Hochberg corrected p values were used. SSEA4 (FUT4) displayed
+eleven significant pairwise comparisons across age-sex groups, LIN28A
+showed nine, and NANOG, POU5F1, and SOX2 had five significant pairwise
+comparisons, seen in Figure 5. KLF4 and ALPL showed the fewest
+significant differences, with only one pairwise comparison reaching
+significance, but all genes displayed significant differences in gene
+expression. For race, ALPL and LIN28A displayed five significant
+pairwise comparisons, and SOX2 displayed four, seen in Figure 6. Several
+pluripotency genes, including FUT4, NANOG, TRA-1-81 and 1-60 (PODXL),
+and OCT4 (POU5F1), did not show any significant pairwise differences
+across age-sex groups, indicating relatively stable expression.
 
-FUT4 showed 11 significant pairwise comparisons across age-sex groups
-after FDR correction (Games-Howell test), LIN28A showed 9, and NANOG,
-POU5F1, and SOX2 with 5 signficant pairwiese comparisons.
-
-KLF4 and ALPL showed the fewest significant differences, with only one
-pairwise comparison reaching significance.
-
-all gene has significant pairwise comparisons
-
-linear mixed model Expression \textasciitilde{} race +
-1\textbar{}\texttt{Gene\ name}
-
-Residual variance = 0.1901 and gene intercept variance = 9.82 means most
-of the variation is between genes, not race. the genes differ a lot.
-residual noise is small, model fits wells
-
-South Asian 2\^{}(-0.143) = 0.9 = 10\% decrease in expression. (p
-\textless{} 0.01)
-
-After adjusting for gene-level random effects, South Asian individuals
-show significantly lower mean log₂ gene expression (β = --0.143, p =
-0.0059).\\
-
-This corresponds to approximately a 10\% decrease in pluripotency gene
-expression relative to the reference race group.
-
-ALPL and LIN28A showed 5 significant pairwise comparisons, and SOX2 with
-four.
-
-Several pluripotency genes, including FUT4, NANOG, PODXL, and POU5F1,
-did not show any significant pairwise differences across age-sex groups,
-indicating relatively stable expression.
+Overall, pluripotency gene expresseion showed a higher variation in
+age-sex groups compared to race groups, suggesting that donor age has a
+greater effect on pluripotency gene expression in iPSC samples than sex
+and race.
 
 \subsubsection{Differentiation Markers}\label{differentiation-markers}
 
-Expression of Differentiation Genes (ectoderm: PAX6, NESTIN (NES)
-(neural projenitor/stem cell markers), KRT14 (epithelial), endoderm:
-SOX17, AFP (hepatic), PDX1 (pancreatic), mesoderm: CD34 (hematopoitic),
-CD90 (THY1)(mesenchymal), NKX2.5 (cardiac progenitor)).
+The expression of nine genes which are commonly used as markers of
+differentiation were analyzed. Three genes were selected for each of the
+three germ layers. For ectoderm markers, PAX6 (paired box 6) and Nestin
+(NES, neuroepithelial stem cell protein) were used as neural
+progenitor/stem cell markers, and KRT14 (keratin 14) as an epithelial
+marker. SOX17 (SRY-box transcription factor 17) was used as a general
+endoderm marker, AFP (alpha-fetoprotein) for hepatic cells (immature
+hepatocytes) , and PDX1 (pancreatic and duodenal homeobox 1) as a
+pancreatic marker. For mesoderm markers, CD34 (cluster of differentation
+34) for hematopoitic cells, CD90 (THY1, THYmocyte differentiation
+antigen 1) for mesenchymal cells, and NKX2-5 (NK2 homeobox 5) for
+cardiac progenitors were used. The expression of these linage specific
+markers is typically observed when populations of iPSCs have begun to
+randomly differentiation, and can be used to indicate the
+differentiation pathway of the cells.
 
-age\_sex
+The same model that was used with the pluripotency genes was used to
+analyze how age, sex, and race influence the expression of
+differentiation genes but substituting the pluripotency genes with
+differentiation genes.
 
-random effects:
+Residual variance was 1.096 and gene intercept variance was 13.168,
+which again suggests that the majority of the variance is between genes,
+not between groups, however, these variances are larger than the
+variances observed with the pluripotency genes.
 
-Gene-level intercept variance = 13.168 (SD = 3.629), showing substantial
-variation between genes.
+It was found that there was no difference in the expression of
+differentiation genes by sex, but there were statically significant
+differences across age and race groups. All three age groups, (50s, 60s,
+and 70s) displays differences in gene expression when compared to the
+reference group, 40s. iPSCs from donors in their 50s displays a 70.8\%
+decrease (\(\beta\) = -1.748, p \textless{} 0.001), iPSCs from donors in
+their 60s displays a 70.6\% decrease (\(\beta\) = -1.743, p \textless{}
+0.001), and iPSCs from donors in thier 70s displayed a 57.7\% increase
+(\(\beta\) = + 0.655, p \textless{} 0.001) in the expression of
+differentiation genes. This was further broken down by age-sex groups,
+in which 50s female had a 17\% decrease (\(\beta\) = -0.269, p
+\textless{} 0.001), 50s male displayed a 24.5\% decrease (\(\beta\) =
+-0.398, p\textless{} 0.001), and 60s female showed a 29.3\% decrease,
+(\(\beta\) = -0.500, p \textless{} 0.001).
 
-Residual variance = 1.195 (SD = 1.093), within-gene variation.
+When looking at race, there was a 25.3\% decrease in the expression of
+differentiation genes in iPSC samples from Asian donors (\(\beta\) =
+-0.429, p \textless{} 0.001), a 32.0\% increase for Hispanic donors
+(\(\beta\) = + 0.399, p \textless{} 0.01), and an 80.0\% increase for
+South Asian donors (\(\beta\) = + 0.854, p \textless{} 0.001). These
+differences can be seen by gene in the heatmap in Figure 7, in which the
+genes NKX2-5, PDX1, AFP, CD24, PAX6, and SOX17 showed high expression in
+South Asian samples, but low expression in Asian samples.
 
-fixed effects
-
-50s female, -0.269, p \textless{} 0.001 17\% decrease
-
-50s male -0.398, p\textless{} 0.001 24.5\% decrease
-
-60s female -0.500, p \textless{} 0.001 29.3\% decrease
-
-Compared with 40s female samples, differentiation gene expression was
-17\% lower in 50s female, 24.5\% lower in 50s male, and 29.3\% lower in
-60s female samples (p \textless{} 0.001 for all). No significant
-differences were observed for 40s male, 60s male, 70s female, or 70s
-male.''
-
-race
-
-Intercept 13.169 Residual1.163
-
-Asian, -0.42975, 25.3\% decrease p \textless{} 0.001
-
-Hispanic, + 0.39902, 32.0\% increase, p \textless{} 0.01
-
-South Asian, + 0.85435, 80.0\% increase, p \textless{} 0.001
+To look at the effect of individual genes, Welch's one-way ANOVA,
+assuming unequal variance, followed by Games-Howell post hoc tests with
+Benjamini-Hochberg corrected p values were used. KRT14, NKX2-5, and CD90
+(THY1) displayed no statistically significant pairwise comparisons for
+both age-sex and race groups, seen in Figure 8 and 9, suggesting that
+there is minimal variation in the expression of these genes across the
+iPSC samples. The remaining genes displayed one to two significant
+pairwise comparisons (with p values \textless{} 0.05 and 0.01) for the
+age-sex groups, whereas these same genes displayed one to eight pairwise
+comparisons (with p values \textless{} 0.05, \textless{} 0.01, and
+0.001) when samples were grouped by race. SOX17 and CD34, in particular
+displayed the most pairwise comparisons, at eight and six respectively.
+This suggests that the expression of differentiation markers is more
+heavily influenced by donor race rather than by age and sex.
 
 \subsubsection{Housekeeping Genes}\label{housekeeping-genes}
 
-Figure 5. Expression of Housekeeping Genes (some sort of general figure
-or sorted by housekeeping type (i.e.~ribosomal, metabolic, cytoskeleton,
-etc.))
+The expression of nine commonly used reference/housekeeping genes in
+mammalian cultures, such as stem cells, were analyzed. GAPDH
+(glyceraldehyde-3-phosphate dehydrogenase) is one of the most widely
+used housekeeping genes since it is involved in glycolysis and is
+consistently expressed across various cell types (Panina et al., 2020).
 
-age\_sex
+Other commonly used gene involved in metabolism include PGK1
+(phosphoglycerate kinase 1), cytoskelaton genes, ACTB (actin beta), and
+ribosomal genes, RPL36AL (ribosomal protein L36a Like), and RPL13A
+(ribosomal protein L13a). Other commonly used housekeeping genes include
+B2M (beta-2 microglobulin), which in volved in the formation of major
+histocompatibility complex (MHC) molecules, HPRT1 (hypoxanthine-guanine
+phosphoribosyltransferase 1) which is an enzyme involved in the purine
+salvage pathway, TBP for the TATA-box binding protein, and UBC for
+ubiquitin C.
 
-Intercept 7.163 Residual 0.150
+Residual variance was 0.148 and gene intercept variance was 7.16, which
+suggests that the majority of the variance is between genes, not between
+groups. Additionally, this is the lowest variance observed between the
+three gene groups.
 
-40s male, + 0.1325, 9.6\% increase, p \textless{} 0.001
+There was no difference in housekeeping expression of age groups 50s,
+60s, and 70s when compared to the reference groups 40s, and a minimal
+increase in expression for male (p \textless{} 0.1). When looking at
+age-sex groups, there were some differences in housekeeping gene
+expression, with 9.6\% increase in males in their 40s (\(\beta\) = +
+0.1325, p \textless{} 0.001), a 2.4\% increase for females in their 50s
+(\(\beta\) = + 0.03375, p \textless{} 0.01), and a 5.7\% increase for
+females in their 60s (\(\beta\) = + 0.08191, p \textless{} 0.01. This
+can be seen in the top heatmap in Figure 10, where 40s males displayed
+higher expression of genes RPL36AL, GAPDH, RPL13A, and PGK1 and lower
+expression of ACTB and UBC, when compared to the reference groups, 40s
+female, which displayed lower expression in RPL36Al, GAPDH, RPL13A, and
+B2M and higher expression in ACTB and UBC.
 
-50s female, + 0.03375, 2.4\% increase, p \textless{} 0.01
+When looking at race, iPSCs from hispanic donors showed a 7.1\% increase
+in housekeeping genes (\(\beta\) = 0.09717, p \textless{} 0.05), but
+there was no statically signfiacnt differences between the other groups
+when compared to the reference group, African American. When looking at
+the bottom heatmap in Figure 10, Asian and Caucasian samples displayed
+consistent average expression values around zero, suggesting that there
+is minimal variation in expression between housekeeping genes for these
+samples. African American and South Asian samples diaplayed the more
+variation, with a decrease in the expression for PGK1, HPRT1, B2M, and
+UBC and increased expression of TBP, ACTB, and GAPDH for African
+American samples, and decreased expression of ACTB, GAPDH, RPL13A, and
+RPL36AL and increased expression of PDK1 for South Asian samples.
 
-60s female, + 0.08191, 5.7\% increase, p \textless{} 0.01
+To look at the effect of individual genes, Welch's one-way ANOVA,
+assuming unequal variance, followed by Games-Howell post hoc tests with
+Benjamini-Hochberg corrected p values were used. ACTB and RPl36AL
+displayed no pairwise comparisions when grouping by age-sex, B2M, GAPDh,
+HPRT1, TBP, RPL13A, and UBC diaplyed two to five significant
+comparisons, and PDK1 displayed ten signficant comparisions. This
+suggests that PGK1 expression varies signfiacntly when grouping by
+age-sex, however, there were no significant compairsions when grouping
+by race. RPL36AL, TBP, and UBC also displayed no significant comparisons
+when grouping by race. ACTB, B2M, GAPDh, HPRT1, and RPL13A displayed one
+to four comparisons.
 
-race
+Across all nine genes, RPL36AL is the only gene that displayed no
+statically signfiance pairwise comparisions for both age-sex groups and
+race, suggesting that the expression of this gene is not influnced by
+age, sex, or race and is consistenly expressed across iPSC samples.
+Overall, it appears that age and sex are the main drivers of variation
+in housekeeping gene expression of the groups studied here.
 
-Intercept 7.1635 Residual 0.1507
-
-Hispanic, + 0.09717, 7.1\% increase, p \textless{} 0.05
+This is supported by the study conducted by Panina \emph{et al} , who
+investigated the expression of 70 commonly used housekeeping genes
+during iPSC reprogramming. They found that some of the most commonly
+used genes, GAPDH, ACTB, HPRT, and B2M, fluctuated more than three fold
+(Panina et al., 2020). They also round that ribsosomal genes, such as
+RPL13A, were the most stable regarding their expression during the
+reprogramming process. In this study RPL13A expression appears to
+flucuate in iPSC samples, however, RPL36AL does not appear to.
 
 \section{Conclusion}\label{conclusion}
 
@@ -884,6 +973,10 @@ Cerneckis, J., Cai, H. \& Shi, Y. (2024). Induced pluripotent stem cells
 Husson, F., Josse, J., Le, S. \& Mazet, J. (2025). \emph{FactoMineR:
 Multivariate exploratory data analysis and data mining}.
 \url{http://factominer.free.fr}
+
+\bibitem[\citeproctext]{ref-R-rstatix}
+Kassambara, A. (2025). \emph{Rstatix: Pipe-friendly framework for basic
+statistical tests}. \url{https://rpkgs.datanovia.com/rstatix/}
 
 \bibitem[\citeproctext]{ref-R-pheatmap}
 Kolde, R. (2025). \emph{Pheatmap: Pretty heatmaps}.
