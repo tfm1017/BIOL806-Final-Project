@@ -199,7 +199,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={Analysis of iPSC Gene Expression (will be changed)},
+  pdftitle={Gene Expression Variability in Human Induced Pluripotent Stem Cells},
   pdfauthor={Trinity Minard},
   colorlinks=true,
   linkcolor={blue},
@@ -209,21 +209,51 @@
   pdfcreator={LaTeX via pandoc}}
 
 
-\title{Analysis of iPSC Gene Expression (will be changed)}
+\title{Gene Expression Variability in Human Induced Pluripotent Stem
+Cells}
 \usepackage{etoolbox}
 \makeatletter
 \providecommand{\subtitle}[1]{% add subtitle to \maketitle
   \apptocmd{\@title}{\par {\large #1 \par}}{}{}
 }
 \makeatother
-\subtitle{Final Project}
+\subtitle{BIOL 806 Final Project}
 \author{Trinity Minard}
-\date{2025-12-04}
+\date{2025-12-07}
 \begin{document}
 \maketitle
 
 
 \section{Abstract}\label{abstract}
+
+Human induced pluripotent stem cells (iPSCs) are widely used to model
+human development, disease, and for potential cell therapies. Accurate
+characterization of iPSC lines is essential to ensure experimental and
+manufacturing consistency, including assessing pluripotency,
+differentiation, and reference gene expression. However, previous
+studies have shown that commonly used housekeeping genes, such as GAPDH,
+can vary across iPSC lines, complicating normalization.
+
+Here, we analyzed publicly available RNA-seq data from 317 iPSC samples
+from 101 diverse donors to quantify RNA composition, identify drivers of
+gene expression variability, and evaluate pluripotency, differentiation,
+and housekeeping gene expression. While multiple RNA types were
+detected, 91.7\% of total expression originated from protein-coding
+mRNAs. Principal component analysis (PCA) and Welch's one-way ANOVA
+revealed that donor age--sex groups and race contributed significantly
+to expression variability, with sex-linked genes among the top drivers.
+Pluripotency markers, such as LIN28A and SOX2, and differentiation
+markers, such as SOX17 and CD34, amongst many other genes, exhibited
+variable expression across donor groups. Notably, housekeeping genes
+(GAPDH, HPRT1, PGK1) also significantly varied, highlighting limitations
+for their use as universal references.
+
+These results highlight that donor age, sex, and race can significantly
+influence iPSC transcriptomes, affecting the expression of many genes
+that are commonly used as references and control markers. This displays
+the need to account for donor demographics when interpreting gene
+expression data, selecting reference genes, or designing experiments
+using iPSCs, to ensure accurate and reproducible results.
 
 \section{Introduction}\label{introduction}
 
@@ -231,7 +261,7 @@ The discovery of human induced pluripotent stem cells (iPSCs) by
 Takahashi and Yamanaka in 2007 (Takahashi et al., 2007) has
 revolutionized the regenerative medicine field. iPSCs are created by
 reprogramming somatic cells into an embryonic like state using the
-Yamanaka transciption factors: SOX2, OCT4, KLF4, and c-Myc). These cells
+Yamanaka transciption factors: SOX2, OCT4, KLF4, and c-Myc. These cells
 have vast capabilities due to their ability to model human development
 and diseases \emph{in vitro}, and their potential for patient specific
 (autologous) and ``off the shelf'' (allogeneic) cell therapies
@@ -246,17 +276,17 @@ done using techniques such as reverse transcriptase or real time
 quantitative PCR (RT-qPCR) to analyze mRNA expression (Artyukhov et al.,
 2017), or using an antibody based experiment to analyze protein
 expression levels, such as Flow Cytometry or immunocytochemistry. When
-conducting these experiments, specifically RT-qPCR, reference genes,
-also known as housekeeping genes, are used to normalize the expression
-of other genes in a sample (Artyukhov et al., 2017). This allows the
-expression of genes to be compared across different samples, since it is
-presumed that the expression of the housekeeping gene is consistent
-across all of the samples. In stem cell samples, however, it has been
-found that the commonly used housekeeping genes, such as GAPDH, appear
-to fluctuate in iPSC samples (Panina et al., 2020), making it difficult
-to achieve accurate normalization data.
+conducting RT-qPCR and similar experiments, reference genes, also known
+as housekeeping genes, are used to normalize the expression of other
+genes in a sample (Artyukhov et al., 2017). This allows the expression
+of genes to be compared across different samples, since it is presumed
+that the expression of the housekeeping gene is consistent across all of
+the samples. In stem cell samples, however, it has been found that the
+commonly used housekeeping genes, such as GAPDH, appear to fluctuate in
+iPSC samples (Panina et al., 2020), making it difficult to achieve
+accurate normalization data.
 
-RNA Seq is a technique that sequences the entirety of RNA molecules in a
+RNA-Seq is a technique that sequences the entirety of RNA molecules in a
 given sample, rather than using gene specific primers or probes as in
 RT-qPCR and other techniques. This allows the entire transciptome to be
 analyzed, providing a complete picture of the expression of genes in a
@@ -266,19 +296,19 @@ eliminating the need for a housekeeping gene. This allows for an
 unbiased and quantitiative analysis of millions of genes in sample (Wang
 et al., 2009). Despite these advantages, RNA-Seq is far more time
 consuming and expensive than RT-qPCR and other experiments, making it
-non practical in a manufacturing setting. Therefore, utilizing RNA-Seq
-to analyze iPSC samples could provide insight into housekeeping gene
-expression, allowing researchers to select ideal reference genes for
-their analysis.
+less practical in a manufacturing setting. Therefore, utilizing RNA-Seq
+to analyze a large number of iPSC samples could provide insight into
+housekeeping gene expression, allowing researchers to select ideal
+reference genes for their analysis.
 
 A similar study, conducted by Carcamo-Orive \emph{et al.,} investigated
 the variability of gene expression across 317 iPSC lines generated from
 101 individuals (Carcamo-Orive et al., 2017) and created a publically
 avaible data set of their raw RNA Seq data. They found that genetic
 variability in the iPSC lines was influenced by a donor specific gene
-expression pattern, specifically influenced by donor age, sex, ancestry,
-and reprogramming variabilies. iPSCs can also be reprogrammed from a
-variety of somatic cells, such as blood, skin fibroblasts, hair
+expression patterns, specifically influenced by donor age, sex,
+ancestry, and reprogramming variabilies. iPSCs can also be reprogrammed
+from a variety of somatic cells, such as blood, skin fibroblasts, hair
 keratinocytes, urine cells, mesencymal stem cells, and bone marrow
 (Poetsch et al., 2022). While some somatic cells are easier to obtain
 than others, such as blood cells and fibroblasts, iPSCs from these lines
@@ -295,6 +325,10 @@ on the expression of pluripotency markers, differentiation markers, and
 housekeeping genes.
 
 \section{Methods}\label{methods}
+
+All scripts used for processing, filtering, visualization, and
+statistical analysis are available at:
+\url{https://github.com/tfm1017/BIOL806-Final-Project}.
 
 \subsubsection{Data Cleaning}\label{data-cleaning}
 
@@ -316,7 +350,7 @@ data frame for further analysis.
 
 The number of samples for each group within the age-sex and race
 categories were summarized and displayed as two tables using the knitr
-(Xie, 2025) and kableExtra (Zhu, 2024) packages.
+(Xie, 2025) and kableExtra (H. Zhu, 2024) packages.
 
 \subsubsection{Pie Charts by RNA
 Category}\label{pie-charts-by-rna-category}
@@ -335,7 +369,7 @@ using the patchwork package (Pedersen, 2025).
 \subsubsection{Principal Component Analysis (PCA)
 Plots}\label{principal-component-analysis-pca-plots}
 
-Log₂ expression values were first cleaned by removing entries without
+Log2 expression values were first cleaned by removing entries without
 gene information and duplicate gene names. Gene variances were
 calculated across the samples, and genes with no variance were removed.
 To visualize the major sources of variation in the expression data, a
@@ -349,35 +383,36 @@ differences were found for the age sex groups and race categories, so
 two PCA biplots were generated, each overlaying confidence ellipses
 corresponding to either age sex groups or race. On both of the biplots,
 the top twenty genes with the highest variance across all samples were
-labeled and displayed as vectors.
+labeled and displayed as vectors. Additionally, PCA data was plotted as
+four scatterplots, colored by age, sex, age-sex, and race.
 
 \subsubsection{Pluripotency, Differentiation, and Housekeeping Gene
 Expression}\label{pluripotency-differentiation-and-housekeeping-gene-expression}
 
-The log₂ expression of genes, categorized as pluripotency markers,
+The log2 expression of genes, categorized as pluripotency markers,
 differentiation markers, and housekeeping genes, was compared across
 sample groups (age-sex and race) using heatmaps, linear mixed-effects
 models, and Welch's ANOVA with post hoc Games-Howell tests. Heatmaps of
-log₂ gene expression were generated using the pheatmap package (Kolde,
+log2 gene expression were generated using the pheatmap package (Kolde,
 2025) to visualize overall expression patterns within each gene
 category. Linear mixed-effect models were then fit using lme4 (Bates et
 al., 2025) and lmerTest (Kuznetsova et al., 2020) to evaluate
-differences in gene expression across age-sex and race groups, while
-accounting for gene-specific baseline expression levels by using random
-intercepts for genes. Percent differences in overall gene expression
-were calculated by exponentiating the estimated log₂ scale coefficient
-back to fold change, subtracting one, and multiplying by 100. QQ plots
-and histograms were generated, but not shown here, for each model to
-view residuals and assess model assumptions. To identify which genes
-displayed statistically significant differences in expression between
-sample categories, Welch's one-way ANOVA, assuming unequal variance, was
-performed for each gene. P values were adjusted using the
-Benjamini-Hochberg method due to the high number of tests that were
-performed. For genes with significant ANOVA results, Games-Howell post
-hoc tests, using rstatix (Kassambara, 2025), were performed and p-values
-were Benjamini-Hochberg corrected. Significant Games Howell comparisons
-(adjusted p \textless{} 0.05) were annotated on bar plots displaying
-log₂ expression for each gene across sample groups.
+differences in gene expression across age, sex, age-sex ,and race
+groups, while accounting for gene-specific baseline expression levels by
+using random intercepts for genes. Percent differences in overall gene
+expression were calculated by exponentiating the estimated log2 scale
+coefficient back to fold change, subtracting one, and multiplying by
+100. QQ plots and histograms were generated, but not shown here, for
+each model to view residuals and assess model assumptions. To identify
+which genes displayed statistically significant differences in
+expression between sample categories, Welch's one-way ANOVA, assuming
+unequal variance, was performed for each gene. P values were adjusted
+using the Benjamini-Hochberg method due to the high number of tests that
+were performed. For genes with significant ANOVA results, Games-Howell
+post hoc tests, using rstatix (Kassambara, 2025), were performed and
+p-values were Benjamini-Hochberg corrected. Significant Games Howell
+comparisons (adjusted p \textless{} 0.05) were annotated on bar plots
+displaying log2 expression for each gene across sample groups.
 
 \section{Results}\label{results}
 
@@ -439,20 +474,20 @@ type of RNA and plotted as a pie chart (right).}
 
 \end{figure}%
 
-\begin{figure}
+\begin{figure}[H]
 
-\centering{
-
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-pca-sexage-1.pdf}}
+{\centering \pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig_pca-1.pdf}}
 
 }
 
-\caption{\label{fig-pca-sexage}Principal Component Analysis (PCA)
-grouped by Donor's Age and Sex. PCA of log2 gene expression across all
-samples. PCA1 and PCA2 explain 10.5\% and 6.4\# of the variance,
-respectively. Sample are colored by age-sex groups and ellipses
-represent 95\% confidence intervals for each group. Two twenty genes
-contributing most to the variance are labeled as vactors.}
+\caption{Principal Component Analysis (PCA) grouped by Donor's Age and
+Sex (top) and Race (bottom). PCA was performed using log2 gene
+expression across all samples, after removing genes with zero variance.
+PCA1 and PCA2 explain 10.5\% and 6.4\% of the variance in gene
+expression, respectively. Sample are colored by age-sex or race groups
+and ellipses represent 95\% confidence intervals for each group. Two
+twenty genes contributing most to the variance, and thus most strongly
+influencing PCA1 and PCA2, are labeled as vectors.}
 
 \end{figure}%
 
@@ -460,16 +495,16 @@ contributing most to the variance are labeled as vactors.}
 
 \centering{
 
-\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-pca-race-1.pdf}}
+\pandocbounded{\includegraphics[keepaspectratio]{Final-Project-BIOL806-V4_files/figure-pdf/fig-pca-graph-1.pdf}}
 
 }
 
-\caption{\label{fig-pca-race}Principal Component Analysis (PCA) grouped
-by Donor's Race. PCA of log2 gene expression across all samples. PCA1
-and PCA2 explain 10.5\% and 6.4\# of the variance, respectively. Sample
-are colored by race groups and ellipses represent 95\% confidence
-intervals for each group. Two twenty genes contributing most to the
-variance are labeled as vactors.}
+\caption{\label{fig-pca-graph}Principal Component Analysis (PCA) Grouped
+by Sex, Age, Age-Sex, and Race of Donors. PCA was performed using log2
+gene expression across all samples, after remvoing genes with zero
+variance. PCA1 and PCA2 explain 10.5\% and 6.4\% of the variance in gene
+expression, respectively. The samples were then colored by catagory:
+sex, age, age-sex, and race, to observe clustering of gene expression.}
 
 \end{figure}%
 
@@ -634,53 +669,66 @@ asterisks: p \textless{} 0.05 (\texttt{*}), p \textless{} 0.01
 
 \section{Discussion}\label{discussion}
 
-\subsubsection{pie charts}\label{pie-charts}
+\subsubsection{RNA Composition}\label{rna-composition}
 
 The RNA Seq data is composed of a variety of different types of RNA, as
-seen in Figure 1. 34.8\% of read genes are mRNA protein coding genes,
-whereas the remaining 65.2\% of the detected genes are not protein
+seen in Figure 1. Of the genes detected, 34.8\% of read genes are mRNA
+protein coding genes, whereas the remaining 65.2\% are not protein
 coding and are primary composed of noncoding RNAs and pseudogenes, which
 are RNA sequences that look like protein coding genes but are not able
-to be translated into a protein. 25.6\% of the detected genes were
-pseuodegenes. 25.5\% were long non coding RNA sequences and 8.5\% were
-small RNAs, which included snoRNA, snRNA, scaRNA, sRNA, and ribozyme
-RNA. 5.7\% were ``Other'' RNAs, which include ribosoal RNA, immunoglobin
-genes, T-cell receptor genes, and mitocondrial RNAs. The right pie
-chart, on the other hand, displays the expression of these groups. For
-each gene for each sample, a count per million number was provided by
-Carcamo-Orive \emph{et al.}. This is typically calculated by dividing
-the raw count of the gene by the total reads in the sample and
-multiplying by one million. The total expression was summed for each
-category, and this was graphed in Figure 2, which displays that 91.7\%
-of the expression is from protein coding genes. The remaining 8.3\%
-accounts for the expression of small RNAs, long non coding RNA,
-pseuodgenes, and ``Other'' genes. This is supported by \_\_\_ data from
-\_\_\_ article, which saw \_\_\_\_.
+to be translated into a protein. Specifically, 25.6\% of the detected
+genes were pseuodegenes, 25.5\% were long non coding RNA sequences and
+8.5\% were small RNAs, which included snoRNA, snRNA, scaRNA, sRNA, and
+ribozyme RNA. 5.7\% were ``Other'' RNAs, which include ribosomal RNA,
+immunoglobin genes, T-cell receptor genes, and mitocondrial RNAs.
 
-\subsubsection{pca}\label{pca}
+The right pie chart, on the other hand, displays the cumulative
+expression of these groups. For each gene in each sample, expression was
+reported as counts per million by Carcamo-Orive \emph{et al.}. This is
+typically done by dividing the raw count of the gene by the total reads
+in the sample and multiplying by one million. The total expression was
+summed for each category, and this was graphed in Figure 2, which
+displays that 91.7\% of the expression is from protein coding genes. The
+remaining 8.3\% accounts for the expression of small RNAs, long non
+coding RNA, pseuodgenes, and ``Other'' genes. This is supported by Zhu
+\emph{et al}., who identfied that 93.7\% of the transcripts in various
+RNA-Seq analysed tissue samples were protein coding, while 6.3\% were
+non-coding transcripts (J. Zhu et al., 2016).
 
-welch's anova (one way analysis of means (not assuming equal variance)
+\subsubsection{PCA}\label{pca}
 
-PC1 and sex (p = 0.3892) PCA2 ( p = 0.6077)
-
-PCA1 and age\_Decade (p = 0.09443) and PCA2 (p = 0.2645)
-
-PCA1 and age\_sex (p = 0.1993) and PCA2 (p \textless{} 0.001)
-
-PCA1 and race (p \textless{} 0.001) and PCA2 (p \textless{} 0.001)
-
-When tested independently, neither age nor sex was significantly
-associated with PC1 or PC2.\\
-
+Principal component anaysis (PCA) was used to identify what genes
+expressed the greatest variation in expression of the iPSC analyzed
+samples and to visualize how demographic variables contribute to their
+variation. Figure 2 displays two PCA biplots annotated with 95\%
+confidence ellipses for age-sex groups (top) and race groups (bottom).
+While the axis represent a low percentage of variability, 10.5\% for
+PCA1 and 6.4\% for PCA2, this is expected when a large number of genes
+(58,302), and thus a large number of variables, are included in the
+analysis. The ellipses displayed substantial overlap for the age-sex
+groups, but race based ellipses displayed some clustering of samples,
+suggesting that race contributes more strongly to the overall variations
+in gene expression of the samples, seen in Figure 2. The PCA biplots
+were then plotted as scatterplots and colored by age, sex, age-sex, and
+race to further view clustering in the dataset, as seen in Figure 3.
+This interpretation was quantified using a one way analysis of means,
+not assuming equal variance due to the variation in the number of
+samples per group, seen in Table 1 and 2. When tested independently,
+neither age nor sex was significantly associated with PC1 or PC2.
 However, when individuals were grouped by age--sex categories, a
-significant effect emerged (Welch's ANOVA p = ), suggesting that
-specific combinations of age and sex capture multivariate expression
-patterns not explained by either variable alone.
+significant effect emerged (Welch's ANOVA, PCA1 p = 0.199 and PCA2 p =
+0.265), suggesting that specific combinations of age and sex capture
+expression patterns not explained by either variable alone.
+Additionally, PCA1 and PCA2 were strongly influenced by the donor's race
+(Welch's ANOVA, p \textless{} 0.001). This suggests that environmental
+factors or ancestry linked biological factors are major contributors to
+transcriptional variability in iPSC lines.
 
-The top twenty genes with the greatest variability in expression across
-the iPSC samples were identified and labeled. These genes were primarily
-related to genes found on the sex chromosomes, such as male specific
-genes encoded on the Y chromosome: RPS4Y1 (var = 16.973), DDX3Y (var =
+To better understand the drivers of the observed PCA patterns, the top
+twenty genes with the greatest variability in expression across the iPSC
+samples were identified and labeled. These genes were primarily related
+to genes found on the sex chromosomes, such as male specific genes
+encoded on the Y chromosome: RPS4Y1 (var = 16.973), DDX3Y (var =
 13.869), TXLNGY (var = 10.610), KDM5D (var = 10.160), USP9Y (var =
 9.251), EIF1AY (var = 7.341), UTY (var = 7.231), NLGN4Y (var = 6.110);
 an X linked gene: RPS4XP22 (var = 5.800); and genes involved in X
@@ -700,7 +748,7 @@ development and early differentiation, tumor suppressors MEG3 (var =
 (var = 6.874), a gene involved in glycosylation in the Golgi apparatuss,
 CST1 (var = 9.794), a cysteine protease inhibitor , and COL3A1 (var =
 6.400) for collagen type III, an extracellular matrix protein.
-Caramo-Orive \emph{et al} investigated the two 200 genes with the most
+Caramo-Orive \emph{et al} investigated the top 200 genes with the most
 variability by performing a key driver analyses. They also found that
 LINC00261, CER1, and APOA2 (similar to APOA1) were key drivers of
 variability in iPSC samples, in addition to four other genes, GATA4,
@@ -717,12 +765,13 @@ Alkaline Phosphatase (ALPL)., were analyzed after grouping by both
 age-sex and race. These genes include transcription factors, SOX2
 (SRY-box transciption factor 2), OCT4 (octamer-binding transcription
 factor 4), KLF4 (kruppel-like factor 4), and NANOG (nanog homeobox),
-involved in maintaining a pluripotent state, cell surface markers, SSEA4
-(stage-specific embryonic antigen-4) and TRA-1-81/TRA-1-60 (tumor
-related antigen), RNA binding protein, LIN28A (lin-28 homolog A), and a
-highly expressed enzyme in pluripotent cells, alkaline phosphatase.
-These genes have been found to be highly expressed in pluripotent cells,
-such as iPSCs (Takahashi et al., 2007).
+involved in maintaining a pluripotent state. Additionally, the
+expression of PSC cell surface markers, SSEA4 (stage-specific embryonic
+antigen-4) and TRA-1-81/TRA-1-60 (tumor related antigen), an RNA binding
+protein, LIN28A (lin-28 homolog A), and a highly expressed enzyme in
+pluripotent cells, alkaline phosphatase, were analyzed. These genes have
+been found to be highly expressed in pluripotent cells, such as iPSCs
+(Takahashi et al., 2007).
 
 To determine if the expression of these pluripotent genes varied across
 conditions, a linear mixed model was used. The predicted expression was
@@ -751,22 +800,21 @@ samples (\(\beta\) = - 0.097, p \textless{} 0.05). The 70s female group
 displayed a 6.5\% decrease in pluripotency expression (\(\beta\) = -
 0.097, p \textless{} 0.05.), whereas 70s male saw a 13\% increase in
 pluripotency expression (\(\beta\) = + 0.179, p \textless{} 0.001).
-There was no observed difference between the other groups age-sex groups
-and the reference group (40s female), suggesting that iPSCs generated
-from donors in their 70s differ in their expression of pluripotency
-genes when compared to donors between the ages of 40 and 70. These
-results are observed in Figure 4 top heatmap, which display higher
-expression in 70s males for several pluripotency genes (c-MYC, KLF4,
-SSEA4 (FUT4), and OCT4 (POU5F1)), and lower expression in several genes
-for 70s female (ALPL, LIN28A, SOX2, TRA-1-81/TRA-1-60 (PODXL), and
-c-MYC). When looking at race, iPSC samples from South Asian donors
-displayed a 10\% decrease in pluripotency gene expression (\(\beta\) =
--0.143, p \textless{} 0.01), but there was no difference between the
-other groups and the reference group, African Americans. This can be
-seen in Figure 4, where pluripotency expression for South Asian
-displayed both increased (SSEA4 (FUT4) and KLF4) and decreased
-expression (OCT4 (POU5F1), NANOG, LIN28A, SOX2, and ALPL) in the
-majority of pluripotency genes.
+There was no observed difference between the other age-sex groups and
+the reference group (40s female), suggesting that iPSCs generated from
+donors in their 70s differ in their expression of pluripotency genes
+when compared to donors between the ages of 40 and 70. These results are
+observed in the Figure 4 top heatmap, which display higher expression in
+70s males for several pluripotency genes (c-MYC, KLF4, SSEA4 (FUT4), and
+OCT4 (POU5F1)), and lower expression in several genes for 70s female
+(ALPL, LIN28A, SOX2, TRA-1-81/TRA-1-60 (PODXL), and c-MYC). When looking
+at race, iPSC samples from South Asian donors displayed a 10\% decrease
+in pluripotency gene expression (\(\beta\) = -0.143, p \textless{}
+0.01), but there was no difference between the other groups and the
+reference group, African Americans. This can be seen in Figure 4, where
+pluripotency expression for South Asian displayed both increased (SSEA4
+(FUT4) and KLF4) and decreased expression (OCT4 (POU5F1), NANOG, LIN28A,
+SOX2, and ALPL) in the majority of pluripotency genes.
 
 To look at the effect of individual genes, Welch's one-way ANOVA,
 assuming unequal variance, followed by Games-Howell post hoc tests with
@@ -789,14 +837,14 @@ and race.
 
 \subsubsection{Differentiation Markers}\label{differentiation-markers}
 
-The expression of nine genes which are commonly used as markers of
-differentiation were analyzed. Three genes were selected for each of the
-three germ layers. For ectoderm markers, PAX6 (paired box 6) and Nestin
-(NES, neuroepithelial stem cell protein) were used as neural
+The expression of nine genes, which are commonly used as markers of
+differentiation, were analyzed. Three genes were selected for each of
+the three germ layers. For ectoderm markers, PAX6 (paired box 6) and
+Nestin (NES, neuroepithelial stem cell protein) were used as neural
 progenitor/stem cell markers, and KRT14 (keratin 14) as an epithelial
 marker. SOX17 (SRY-box transcription factor 17) was used as a general
 endoderm marker, AFP (alpha-fetoprotein) for hepatic cells (immature
-hepatocytes) , and PDX1 (pancreatic and duodenal homeobox 1) as a
+hepatocytes), and PDX1 (pancreatic and duodenal homeobox 1) as a
 pancreatic marker. For mesoderm markers, CD34 (cluster of differentation
 34) for hematopoitic cells, CD90 (THY1, THYmocyte differentiation
 antigen 1) for mesenchymal cells, and NKX2-5 (NK2 homeobox 5) for
@@ -884,55 +932,84 @@ age-sex groups, there were some differences in housekeeping gene
 expression, with 9.6\% increase in males in their 40s (\(\beta\) = +
 0.1325, p \textless{} 0.001), a 2.4\% increase for females in their 50s
 (\(\beta\) = + 0.03375, p \textless{} 0.01), and a 5.7\% increase for
-females in their 60s (\(\beta\) = + 0.08191, p \textless{} 0.01. This
+females in their 60s (\(\beta\) = + 0.08191, p \textless{} 0.01). This
 can be seen in the top heatmap in Figure 10, where 40s males displayed
 higher expression of genes RPL36AL, GAPDH, RPL13A, and PGK1 and lower
 expression of ACTB and UBC, when compared to the reference groups, 40s
 female, which displayed lower expression in RPL36Al, GAPDH, RPL13A, and
 B2M and higher expression in ACTB and UBC.
 
-When looking at race, iPSCs from hispanic donors showed a 7.1\% increase
-in housekeeping genes (\(\beta\) = 0.09717, p \textless{} 0.05), but
-there was no statically signfiacnt differences between the other groups
-when compared to the reference group, African American. When looking at
-the bottom heatmap in Figure 10, Asian and Caucasian samples displayed
-consistent average expression values around zero, suggesting that there
-is minimal variation in expression between housekeeping genes for these
-samples. African American and South Asian samples diaplayed the more
-variation, with a decrease in the expression for PGK1, HPRT1, B2M, and
-UBC and increased expression of TBP, ACTB, and GAPDH for African
-American samples, and decreased expression of ACTB, GAPDH, RPL13A, and
-RPL36AL and increased expression of PDK1 for South Asian samples.
+When looking at race, iPSCs from Hispanic donors showed a 7.1\% increase
+in housekeeping gene expression (\(\beta\) = 0.09717, p \textless{}
+0.05), but there was no statistically significant differences between
+the other groups when compared to the reference group, African American.
+When looking at the bottom heatmap in Figure 10, Asian and Caucasian
+samples displayed consistent average expression values around zero,
+suggesting that there is minimal variation in expression between
+housekeeping genes for these samples. African American and South Asian
+samples diaplayed the more variation, with a decrease in the expression
+for PGK1, HPRT1, B2M, and UBC and increased expression of TBP, ACTB, and
+GAPDH for African American samples, and decreased expression of ACTB,
+GAPDH, RPL13A, and RPL36AL and increased expression of PDK1 for South
+Asian samples.
 
 To look at the effect of individual genes, Welch's one-way ANOVA,
 assuming unequal variance, followed by Games-Howell post hoc tests with
 Benjamini-Hochberg corrected p values were used. ACTB and RPl36AL
-displayed no pairwise comparisions when grouping by age-sex, B2M, GAPDh,
-HPRT1, TBP, RPL13A, and UBC diaplyed two to five significant
-comparisons, and PDK1 displayed ten signficant comparisions. This
-suggests that PGK1 expression varies signfiacntly when grouping by
-age-sex, however, there were no significant compairsions when grouping
-by race. RPL36AL, TBP, and UBC also displayed no significant comparisons
-when grouping by race. ACTB, B2M, GAPDh, HPRT1, and RPL13A displayed one
+displayed no pairwise comparisons when grouping by age-sex, B2M, GAPDH,
+HPRT1, TBP, RPL13A, and UBC displayed two to five significant
+comparisons, and PGK1 displayed ten significant comparisons. This
+suggests that PGK1 expression varies significantly when grouping by
+age-sex, however, there were no significant comparisons when grouping by
+race. RPL36AL, TBP, and UBC also displayed no significant comparisons
+when grouping by race. ACTB, B2M, GAPDH, HPRT1, and RPL13A displayed one
 to four comparisons.
 
 Across all nine genes, RPL36AL is the only gene that displayed no
-statically signfiance pairwise comparisions for both age-sex groups and
-race, suggesting that the expression of this gene is not influnced by
-age, sex, or race and is consistenly expressed across iPSC samples.
-Overall, it appears that age and sex are the main drivers of variation
-in housekeeping gene expression of the groups studied here.
+statistically significant pairwise comparisons for both age-sex groups
+and race, suggesting that the expression of this gene is not influenced
+by age, sex, or race and is consistently expressed across all of the
+anazlyed iPSC samples. Overall, it appears that age and sex are the main
+drivers of variation in housekeeping gene expression of the groups
+studied here.
 
-This is supported by the study conducted by Panina \emph{et al} , who
+This is supported by the study conducted by Panina \emph{et al} who
 investigated the expression of 70 commonly used housekeeping genes
 during iPSC reprogramming. They found that some of the most commonly
 used genes, GAPDH, ACTB, HPRT, and B2M, fluctuated more than three fold
 (Panina et al., 2020). They also round that ribsosomal genes, such as
 RPL13A, were the most stable regarding their expression during the
 reprogramming process. In this study RPL13A expression appears to
-flucuate in iPSC samples, however, RPL36AL does not appear to.
+fluctuate in iPSC samples, however, RPL36AL does not appear to.
 
 \section{Conclusion}\label{conclusion}
+
+The transcriptome of 317 iPSC samples, collected using RNA-Seq from a
+variety of donors, were analyzed to characterize overall RNA
+composition, identify key drivers of expression variability via
+principal component analysis (PCA), and access variability in the
+expression of specific pluripotency, differentiation, and reference
+genes. While a variety of RNA types were detected, 91.7\% of the total
+expression was contributed by protein coding mRNAs. PCA and Welch's
+one-way ANOVA revealed that donor age-sex groups and race were major
+contributors to expression variability, with the top genes driving
+sample seperation including sex-linked genes located on the X and Y
+chromosomes.
+
+Expression of commonly used pluripotency markers, including LIN28A and
+SOX2, varied across age--sex and race groups. Similarly, differentiation
+markers such as SOX17 and CD34 exhibited numerous significant pairwise
+differences, particularly between racial groups. Even housekeeping
+genes, which are typically assumed to be stably expressed, displayed
+variability across age--sex and race groups, notably GAPDH, HPRT1, and
+PGK1. These findings indicate that donor demographic characteristics can
+influence the transcriptome of iPSCs, including genes often used as
+references or markers. However, because group sizes were unequal, some
+variability may reflect limited sample numbers, even when using Welch's
+ANOVA with Benjamini-Hochberg p-value correction. Together, these
+results demonstrate that donor demographics, including age, sex, and
+race, significantly influence global gene expression patterns in iPSCs,
+affecting both highly variable and commonly used reference genes.
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
 
@@ -1045,6 +1122,13 @@ report generation in r}. \url{https://yihui.org/knitr/}
 \bibitem[\citeproctext]{ref-R-kableExtra}
 Zhu, H. (2024). \emph{kableExtra: Construct complex table with kable and
 pipe syntax}. \url{http://haozhu233.github.io/kableExtra/}
+
+\bibitem[\citeproctext]{ref-zhu2016}
+Zhu, J., Chen, G., Zhu, S., Li, S., Wen, Z., Bin Li, Zheng, Y. \& Shi,
+L. (2016). Identification of Tissue-Specific Protein-Coding and
+Noncoding Transcripts across 14 Human Tissues Using RNA-seq.
+\emph{Scientific Reports}, \emph{6}(1), 28400.
+\url{https://doi.org/10.1038/srep28400}
 
 \end{CSLReferences}
 
